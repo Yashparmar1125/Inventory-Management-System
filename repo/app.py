@@ -11,6 +11,7 @@ from datetime import datetime
 from typing import Optional, Dict, Any, Tuple
 import os
 from contextlib import contextmanager
+from decimal import Decimal
 
 try:
     from dotenv import load_dotenv
@@ -874,12 +875,22 @@ def get_dashboard():
             total_products = int(val) if isinstance(val, (int, float, str)) else 0
         
         # Total sales amount
-        cursor.execute("SELECT COALESCE(SUM(TotalAmount), 0) as total FROM Sales")
+        cursor.execute("SELECT COALESCE(SUM(TotalAmount), 0) AS total FROM Sales")
         result = cursor.fetchone()
+
         total_sales = 0.0
         if result and isinstance(result, dict) and 'total' in result:
             val = result['total']
-            total_sales = float(val) if isinstance(val, (int, float, str)) else 0.0
+            # Handle Decimal or numeric types safely
+            if isinstance(val, Decimal):
+                total_sales = float(val)
+            elif isinstance(val, (int, float, str)):
+                try:
+                    total_sales = float(val)
+                except ValueError:
+                    total_sales = 0.0
+            else:
+                total_sales = 0.0
         
         # Low stock count
         cursor.execute("SELECT COUNT(*) as total FROM Product WHERE Quantity < ReorderLevel")
