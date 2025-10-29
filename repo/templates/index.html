@@ -1565,6 +1565,19 @@
         async function loadCustomerDropdown(id) { /* ... */
              const s=document.getElementById(id); if(!s)return; s.innerHTML='<option value="">Loading...</option>'; try {const c=await apiFetch(`${API_URL}/customers`); s.innerHTML='<option value="">Select Customer</option>'; if(c.length===0)s.innerHTML='<option value="" disabled>No customers</option>'; else c.forEach(i=>s.innerHTML+=`<option value="${i.CustomerID}">${i.CustomerName}</option>`);} catch(e){console.error(`Err loading CDD ${id}:`,e); s.innerHTML='<option value="">Error</option>'; throw e;}
          }
+        async function loadSupplierDropdown(id) { /* ... */
+             const s=document.getElementById(id); if(!s)return; s.innerHTML='<option value="">Loading...</option>';
+             try {
+                  const sup = await apiFetch(`${API_URL}/suppliers`);
+                  s.innerHTML = '<option value="">Select Supplier</option>';
+                  if (sup.length === 0) s.innerHTML = '<option value="" disabled>No suppliers</option>';
+                  else sup.forEach(i => s.innerHTML += `<option value="${i.SupplierID}">${i.SupplierName}</option>`);
+             } catch(e) {
+                  console.error(`Err loading SDD ${id}:`, e);
+                  s.innerHTML = '<option value="">Error</option>';
+                  throw e;
+             }
+         }
         async function saveSale() { /* ... */
              const f=document.getElementById('saleForm'); const pV=document.getElementById('saleProduct').value, cV=document.getElementById('saleCustomer').value, qV=parseInt(document.getElementById('saleQuantity').value); if(!f.checkValidity()||!pV||!cV||qV<=0){f.reportValidity();showToast('Select product, customer, valid qty > 0.','warning');return;} const d={ProductID:parseInt(pV),CustomerID:parseInt(cV),QuantitySold:qV}; const b=document.querySelector('#saleModal .btn-primary'); const o=b.innerHTML; b.disabled=true; b.innerHTML=`<span class="spinner-border spinner-border-sm"></span> Saving...`; try {await apiFetch(`${API_URL}/sales`,{method:'POST',body:d}); bootstrap.Modal.getInstance(document.getElementById('saleModal')).hide(); showToast('Sale recorded!','success'); await loadSales(); if(document.getElementById('dashboard-section').classList.contains('active')) await loadDashboard(); if(document.getElementById('products-section').classList.contains('active')) await loadProducts();} catch(e){showToast(`Save failed: ${e.message}`,'error');} finally {b.disabled=false; b.innerHTML=o;}
          }
@@ -1614,7 +1627,7 @@
                 
                 contentDiv.innerHTML = `
                     <div class="row g-3">
-                         <div class="col-lg-6" style="min-height: 250px; position: relative;"> {/* Added relative position */}
+                         <div class="col-lg-6" style="min-height: 250px; position: relative;">
                               <canvas id="reportChart"></canvas>
                          </div>
                          <div class="col-lg-6">
