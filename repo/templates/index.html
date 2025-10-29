@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Inventory Management System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #06d6a0;
+            --danger-color: #ef476f;
+            --warning-color: #ffd60a;
+            --dark-color: #212529;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .sidebar {
+            min-height: calc(100vh - 56px);
+            background-color: #fff;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+            padding: 0;
+        }
+
+        .sidebar .nav-link {
+            color: #495057;
+            padding: 15px 20px;
+            border-left: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: #f8f9fa;
+            color: var(--primary-color);
+            border-left-color: var(--primary-color);
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        .stat-card {
+            border-radius: 10px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .stat-card.success { background: linear-gradient(135deg, #06d6a0 0%, #118ab2 100%); }
+        .stat-card.warning { background: linear-gradient(135deg, #f77f00 0%, #d62828 100%); }
+        .stat-card.info { background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%); }
+
+        .stat-card h3 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
+            margin-bottom: 20px;
+        }
+        table thead th { position: sticky; top: 0; z-index: 1; }
+        table tbody tr:hover { background-color: rgba(67,97,238,0.06); }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .badge {
+            padding: 5px 10px;
+            font-size: 0.85rem;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+        }
+
+        .content-area {
+            padding: 20px;
+        }
+
+        .alert-custom {
+            border-left: 4px solid var(--danger-color);
+        }
+        /* Loading overlay */
+        #loadingOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        #loadingOverlay .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--primary-color);
+        }
+        /* Skeleton rows */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e6e6e6 37%, #f0f0f0 63%);
+            background-size: 400% 100%;
+            animation: shimmer 1.4s ease infinite;
+            border-radius: 4px;
+            height: 14px;
+        }
+        @keyframes shimmer {
+            0% { background-position: 100% 0; }
+            100% { background-position: 0 0; }
+        }
+        /* Dark mode */
+        body[data-theme="dark"] {
+            --primary-color: #8ab4f8;
+            --secondary-color: #669df6;
+            --success-color: #2dd4bf;
+            --danger-color: #f87171;
+            --warning-color: #fbbf24;
+            --dark-color: #0b0f14;
+            background-color: #0b0f14;
+            color: #e5e7eb;
+        }
+        body[data-theme="dark"] .navbar { background: linear-gradient(135deg, #1f2937, #111827); }
+        body[data-theme="dark"] .sidebar { background-color: #0f172a; box-shadow: 2px 0 5px rgba(0,0,0,0.5); }
+        body[data-theme="dark"] .sidebar .nav-link { color: #cbd5e1; }
+        body[data-theme="dark"] .sidebar .nav-link:hover, body[data-theme="dark"] .sidebar .nav-link.active { background-color: #111827; color: #8ab4f8; }
+        body[data-theme="dark"] .table-container { background: #0f172a; box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+        body[data-theme="dark"] .table thead { background: #0b1220; color: #e5e7eb; }
+        body[data-theme="dark"] .modal-content { background: #0f172a; color: #e5e7eb; }
+        body[data-theme="dark"] .btn-outline-primary { color: #8ab4f8; border-color: #8ab4f8; }
+        body[data-theme="dark"] .btn-outline-primary:hover { background: #1e293b; }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-box-seam"></i> Smart Inventory System
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item me-2">
+                        <button id="themeToggle" class="btn btn-sm btn-light"><i class="bi bi-moon"></i> Theme</button>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="bi bi-bell"></i> Notifications</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="bi bi-person-circle"></i> Admin</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 sidebar">
+                <nav class="nav flex-column">
+                    <a class="nav-link active" href="#" data-page="dashboard">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                    <a class="nav-link" href="#" data-page="products">
+                        <i class="bi bi-box"></i> Products
+                    </a>
+                    <a class="nav-link" href="#" data-page="suppliers">
+                        <i class="bi bi-truck"></i> Suppliers
+                    </a>
+                    <a class="nav-link" href="#" data-page="customers">
+                        <i class="bi bi-people"></i> Customers
+                    </a>
+                    <a class="nav-link" href="#" data-page="sales">
+                        <i class="bi bi-cart-check"></i> Sales
+                    </a>
+                    <a class="nav-link" href="#" data-page="purchases">
+                        <i class="bi bi-bag-plus"></i> Purchases
+                    </a>
+                    <a class="nav-link" href="#" data-page="reports">
+                        <i class="bi bi-graph-up"></i> Reports
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10 content-area">
+                <!-- Dashboard Section -->
+                <div id="dashboard-section" class="page-section">
+                    <h2 class="mb-4">Dashboard Overview</h2>
+                    
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="stat-card primary">
+                                <h3 id="totalProducts">0</h3>
+                                <p><i class="bi bi-box"></i> Total Products</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card success">
+                                <h3 id="totalSales">₹0</h3>
+                                <p><i class="bi bi-currency-rupee"></i> Total Sales</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card warning">
+                                <h3 id="lowStockCount">0</h3>
+                                <p><i class="bi bi-exclamation-triangle"></i> Low Stock Items</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="stat-card info">
+                                <h3 id="totalCustomers">0</h3>
+                                <p><i class="bi bi-people"></i> Total Customers</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="table-container">
+                                <h5 class="mb-3"><i class="bi bi-exclamation-circle text-danger"></i> Low Stock Alerts</h5>
+                                <div id="lowStockAlerts"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Section -->
+                <div id="products-section" class="page-section" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Products Management</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productModal" onclick="openProductModal()">
+                            <i class="bi bi-plus-circle"></i> Add Product
+                        </button>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <input id="productSearch" type="search" class="form-control" placeholder="Search by name or category..." />
+                        </div>
+                        <div class="col-md-3">
+                            <select id="productPageSize" class="form-select">
+                                <option value="5">5 / page</option>
+                                <option value="10" selected>10 / page</option>
+                                <option value="20">20 / page</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 text-md-end">
+                            <span id="productCount" class="text-muted"></span>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Category</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Supplier</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="productsTable"></tbody>
+                        </table>
+                        <nav class="d-flex justify-content-between align-items-center">
+                            <ul id="productPagination" class="pagination mb-0"></ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Suppliers Section -->
+                <div id="suppliers-section" class="page-section" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Suppliers Management</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#supplierModal" onclick="openSupplierModal()">
+                            <i class="bi bi-plus-circle"></i> Add Supplier
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Contact Person</th>
+                                    <th>Phone</th>
+                                    <th>Email</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="suppliersTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Customers Section -->
+                <div id="customers-section" class="page-section" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Customers Management</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#customerModal" onclick="openCustomerModal()">
+                            <i class="bi bi-plus-circle"></i> Add Customer
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Email</th>
+                                    <th>Address</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="customersTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sales Section -->
+                <div id="sales-section" class="page-section" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Sales Transactions</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#saleModal" onclick="openSaleModal()">
+                            <i class="bi bi-plus-circle"></i> Record Sale
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Sale ID</th>
+                                    <th>Product</th>
+                                    <th>Customer</th>
+                                    <th>Quantity</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="salesTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Purchases Section -->
+                <div id="purchases-section" class="page-section" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2>Purchase Transactions</h2>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#purchaseModal" onclick="openPurchaseModal()">
+                            <i class="bi bi-plus-circle"></i> Record Purchase
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Purchase ID</th>
+                                    <th>Product</th>
+                                    <th>Supplier</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Cost</th>
+                                    <th>Total Cost</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="purchasesTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Reports Section -->
+                <div id="reports-section" class="page-section" style="display:none;">
+                    <h2 class="mb-4">Reports & Analytics</h2>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-primary w-100 mb-2" onclick="loadReport('TopProducts')">
+                                <i class="bi bi-trophy"></i> Top Selling Products
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-primary w-100 mb-2" onclick="loadReport('LowStock')">
+                                <i class="bi bi-exclamation-triangle"></i> Low Stock Report
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <button class="btn btn-outline-primary w-100 mb-2" onclick="loadReport('SalesSummary')">
+                                <i class="bi bi-graph-up"></i> Sales Summary
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <h5 id="reportTitle">Select a report to view</h5>
+                        <div id="reportContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Global Loading Overlay and Toast Container -->
+    <div id="loadingOverlay" aria-hidden="true" aria-busy="true">
+        <div class="loader" role="status" aria-label="Loading">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 2100;">
+        <div id="toastContainer"></div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal fade" id="productModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productModalTitle">Add Product</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="productForm">
+                        <input type="hidden" id="productId">
+                        <div class="mb-3">
+                            <label class="form-label">Product Name *</label>
+                            <input type="text" class="form-control" id="productName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="productDescription" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <input type="text" class="form-control" id="productCategory">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Price *</label>
+                            <input type="number" step="0.01" class="form-control" id="productPrice" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Quantity *</label>
+                            <input type="number" class="form-control" id="productQuantity" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Reorder Level</label>
+                            <input type="number" class="form-control" id="productReorder" value="10">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Supplier</label>
+                            <select class="form-select" id="productSupplier"></select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveProduct()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supplier Modal -->
+    <div class="modal fade" id="supplierModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="supplierModalTitle">Add Supplier</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="supplierForm">
+                        <input type="hidden" id="supplierId">
+                        <div class="mb-3">
+                            <label class="form-label">Supplier Name *</label>
+                            <input type="text" class="form-control" id="supplierName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contact Person</label>
+                            <input type="text" class="form-control" id="supplierContact">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="supplierPhone">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="supplierEmail">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Address</label>
+                            <textarea class="form-control" id="supplierAddress" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSupplier()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Modal -->
+    <div class="modal fade" id="customerModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customerModalTitle">Add Customer</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="customerForm">
+                        <input type="hidden" id="customerId">
+                        <div class="mb-3">
+                            <label class="form-label">Customer Name *</label>
+                            <input type="text" class="form-control" id="customerName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="customerPhone">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="customerEmail">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Address</label>
+                            <textarea class="form-control" id="customerAddress" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveCustomer()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sale Modal -->
+    <div class="modal fade" id="saleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Record Sale</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="saleForm">
+                        <div class="mb-3">
+                            <label class="form-label">Product *</label>
+                            <select class="form-select" id="saleProduct" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Customer *</label>
+                            <select class="form-select" id="saleCustomer" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Quantity *</label>
+                            <input type="number" class="form-control" id="saleQuantity" required min="1">
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Total amount will be calculated automatically
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSale()">Record Sale</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Purchase Modal -->
+    <div class="modal fade" id="purchaseModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Record Purchase</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="purchaseForm">
+                        <div class="mb-3">
+                            <label class="form-label">Product *</label>
+                            <select class="form-select" id="purchaseProduct" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Supplier *</label>
+                            <select class="form-select" id="purchaseSupplier" required></select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Quantity *</label>
+                            <input type="number" class="form-control" id="purchaseQuantity" required min="1">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Unit Cost *</label>
+                            <input type="number" step="0.01" class="form-control" id="purchaseCost" required>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i> Total cost will be calculated automatically
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="savePurchase()">Record Purchase</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // API Base URL - use a relative path since Flask serves both frontend and API
+        const API_BASE_URL = ''; 
+        const API_URL = API_BASE_URL + '/api';
+        // UX Helpers
+        const overlay = document.getElementById('loadingOverlay');
+        function showOverlay(){ overlay.classList.add('show'); }
+        function hideOverlay(){ overlay.classList.remove('show'); }
+        function showToast(message, type='info'){
+            const color = type==='success' ? 'bg-success' : type==='error' ? 'bg-danger' : type==='warning' ? 'bg-warning text-dark' : 'bg-primary';
+            const el = document.createElement('div');
+            el.className = `toast align-items-center text-white ${color}`;
+            el.role = 'alert'; el.ariaLive = 'assertive'; el.ariaAtomic = 'true';
+            el.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>`;
+            document.getElementById('toastContainer').appendChild(el);
+            new bootstrap.Toast(el, {delay:2500}).show();
+        }
+        async function apiFetch(url, options={}, {useOverlay=true}={}){
+            try{ if(useOverlay) showOverlay();
+                const res = await fetch(url, options);
+                const isJson = (res.headers.get('content-type')||'').includes('application/json');
+                const body = isJson ? await res.json() : await res.text();
+                if(!res.ok){ const msg = body && body.error ? body.error : `Request failed (${res.status})`; throw new Error(msg); }
+                return body;
+            } finally { if(useOverlay) hideOverlay(); }
+        }
+
+        // Theme toggle
+        (function initTheme(){
+            const saved = localStorage.getItem('theme');
+            if (saved === 'dark') document.body.setAttribute('data-theme','dark');
+            const btn = document.getElementById('themeToggle');
+            if (btn) {
+                btn.addEventListener('click', ()=>{
+                    const dark = document.body.getAttribute('data-theme') === 'dark';
+                    if (dark) { document.body.removeAttribute('data-theme'); localStorage.setItem('theme','light'); }
+                    else { document.body.setAttribute('data-theme','dark'); localStorage.setItem('theme','dark'); }
+                });
+            }
+        })();
+
+        // Navigation
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+                
+                const page = this.dataset.page;
+                document.querySelectorAll('.page-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                document.getElementById(`${page}-section`).style.display = 'block';
+                
+                // Load data for the selected page
+                loadPageData(page);
+            });
+        });
+
+        // Load page data
+        function loadPageData(page) {
+            switch(page) {
+                case 'dashboard':
+                    loadDashboard();
+                    break;
+                case 'products':
+                    loadProducts();
+                    break;
+                case 'suppliers':
+                    loadSuppliers();
+                    break;
+                case 'customers':
+                    loadCustomers();
+                    break;
+                case 'sales':
+                    loadSales();
+                    break;
+                case 'purchases':
+                    loadPurchases();
+                    break;
+            }
+        }
+
+        // Dashboard
+        async function loadDashboard() {
+            try {
+                const data = await apiFetch(`${API_URL}/dashboard`);
+                
+                document.getElementById('totalProducts').textContent = data.TotalProducts;
+                document.getElementById('totalSales').textContent = `₹${data.TotalSales.toLocaleString()}`;
+                document.getElementById('lowStockCount').textContent = data.LowStockCount;
+                document.getElementById('totalCustomers').textContent = data.TotalCustomers;
+                
+                loadLowStockAlerts();
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+            }
+        }
+
+        async function loadLowStockAlerts() {
+            try {
+                const products = await apiFetch(`${API_URL}/reports/low-stock`);
+                
+                const alertsDiv = document.getElementById('lowStockAlerts');
+                if (products.length === 0) {
+                    alertsDiv.innerHTML = '<p class="text-muted">No low stock items</p>';
+                    return;
+                }
+                
+                let html = '<table class="table table-sm"><thead><tr><th>Product</th><th>Category</th><th>Current Stock</th><th>Reorder Level</th><th>Supplier</th></tr></thead><tbody>';
+                products.forEach(p => {
+                    html += `<tr class="table-warning">
+                        <td>${p.ProductName}</td>
+                        <td>${p.Category}</td>
+                        <td><span class="badge bg-danger">${p.Quantity}</span></td>
+                        <td>${p.ReorderLevel}</td>
+                        <td>${p.SupplierName || 'N/A'}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+                alertsDiv.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading low stock alerts:', error);
+            }
+        }
+
+        // Products
+        let productsData = [];
+        let productsFiltered = [];
+        let productsPage = 1;
+        async function loadProducts() {
+            try {
+                const tbody = document.getElementById('productsTable');
+                tbody.innerHTML = '<tr><td colspan="8"><div class="skeleton" style="height:18px"></div></td></tr>'.repeat(5);
+                productsData = await apiFetch(`${API_URL}/products`);
+                productsFiltered = productsData;
+                productsPage = 1;
+                wireProductControls();
+                renderProducts();
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        function wireProductControls(){
+            const search = document.getElementById('productSearch');
+            const pageSizeSel = document.getElementById('productPageSize');
+            if (search) search.oninput = () => { filterProducts(); };
+            if (pageSizeSel) pageSizeSel.onchange = () => { productsPage = 1; renderProducts(); };
+        }
+
+        function filterProducts(){
+            const q = (document.getElementById('productSearch').value || '').toLowerCase();
+            productsFiltered = productsData.filter(p =>
+                (p.ProductName || '').toLowerCase().includes(q) ||
+                (p.Category || '').toLowerCase().includes(q)
+            );
+            productsPage = 1;
+            renderProducts();
+        }
+
+        function renderProducts(){
+            const tbody = document.getElementById('productsTable');
+            const pageSize = parseInt(document.getElementById('productPageSize').value) || 10;
+            const total = productsFiltered.length;
+            const totalPages = Math.max(1, Math.ceil(total / pageSize));
+            if (productsPage > totalPages) productsPage = totalPages;
+            const start = (productsPage - 1) * pageSize;
+            const rows = productsFiltered.slice(start, start + pageSize);
+            const countEl = document.getElementById('productCount');
+            if (countEl) countEl.textContent = `${total} items`;
+
+            tbody.innerHTML = '';
+            rows.forEach(p => {
+                const status = p.Quantity < p.ReorderLevel ? '<span class="badge bg-danger">Low Stock</span>' : '<span class="badge bg-success">In Stock</span>';
+                tbody.innerHTML += `<tr>
+                    <td>${p.ProductID}</td>
+                    <td>${p.ProductName}</td>
+                    <td>${p.Category || 'N/A'}</td>
+                    <td>₹${parseFloat(p.Price).toLocaleString()}</td>
+                    <td>${p.Quantity}</td>
+                    <td>${p.SupplierName || 'N/A'}</td>
+                    <td>${status}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="editProduct(${p.ProductID})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(${p.ProductID})"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+
+            // Pagination controls
+            const pag = document.getElementById('productPagination');
+            if (!pag) return;
+            pag.innerHTML = '';
+            function addPage(label, page, disabled=false, active=false){
+                const li = document.createElement('li');
+                li.className = `page-item ${disabled?'disabled':''} ${active?'active':''}`;
+                li.innerHTML = `<a class="page-link" href="#">${label}</a>`;
+                li.onclick = (e)=>{ e.preventDefault(); if(!disabled){ productsPage = page; renderProducts(); window.scrollTo({top:0, behavior:'smooth'});} };
+                pag.appendChild(li);
+            }
+            addPage('«', 1, productsPage===1);
+            addPage('‹', Math.max(1, productsPage-1), productsPage===1);
+            const windowSize = 3;
+            const from = Math.max(1, productsPage - windowSize);
+            const to = Math.min(totalPages, productsPage + windowSize);
+            for (let p = from; p <= to; p++) addPage(String(p), p, false, p===productsPage);
+            addPage('›', Math.min(totalPages, productsPage+1), productsPage===totalPages);
+            addPage('»', totalPages, productsPage===totalPages);
+        }
+
+        function openProductModal() {
+            document.getElementById('productModalTitle').textContent = 'Add Product';
+            document.getElementById('productForm').reset();
+            document.getElementById('productId').value = '';
+            loadSupplierDropdown('productSupplier');
+        }
+
+        async function loadSupplierDropdown(elementId) {
+            try {
+                const response = await fetch(`${API_URL}/suppliers`);
+                const suppliers = await response.json();
+                
+                const select = document.getElementById(elementId);
+                select.innerHTML = '<option value="">Select Supplier</option>';
+                suppliers.forEach(s => {
+                    select.innerHTML += `<option value="${s.SupplierID}">${s.SupplierName}</option>`;
+                });
+            } catch (error) {
+                console.error('Error loading suppliers:', error);
+            }
+        }
+
+        async function editProduct(id) {
+            try {
+                const product = await apiFetch(`${API_URL}/products/${id}`);
+                
+                document.getElementById('productModalTitle').textContent = 'Edit Product';
+                document.getElementById('productId').value = product.ProductID;
+                document.getElementById('productName').value = product.ProductName;
+                document.getElementById('productDescription').value = product.Description || '';
+                document.getElementById('productCategory').value = product.Category || '';
+                document.getElementById('productPrice').value = product.Price;
+                document.getElementById('productQuantity').value = product.Quantity;
+                document.getElementById('productReorder').value = product.ReorderLevel;
+                
+                await loadSupplierDropdown('productSupplier');
+                document.getElementById('productSupplier').value = product.SupplierID || '';
+                
+                new bootstrap.Modal(document.getElementById('productModal')).show();
+            } catch (error) {
+                console.error('Error loading product:', error);
+            }
+        }
+
+        async function saveProduct() {
+            const id = document.getElementById('productId').value;
+            const data = {
+                ProductName: document.getElementById('productName').value,
+                Description: document.getElementById('productDescription').value,
+                Category: document.getElementById('productCategory').value,
+                Price: parseFloat(document.getElementById('productPrice').value),
+                Quantity: parseInt(document.getElementById('productQuantity').value),
+                ReorderLevel: parseInt(document.getElementById('productReorder').value),
+                SupplierID: document.getElementById('productSupplier').value || null
+            };
+            
+            try {
+                const url = id ? `${API_URL}/products/${id}` : `${API_URL}/products`;
+                const method = id ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+                    loadProducts();
+                    showToast('Product saved successfully!', 'success');
+                } else {
+                    const errorData = await response.json();
+                    showToast('Error saving product: ' + (errorData.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Error saving product:', error);
+                showToast('Error saving product', 'error');
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Are you sure you want to delete this product?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/products/${id}`, { method: 'DELETE' });
+                if (response.ok) { loadProducts(); showToast('Product deleted successfully!', 'success'); }
+                else { const errorData = await response.json(); showToast('Error deleting product: ' + (errorData.error || 'Unknown error'), 'error'); }
+            } catch (error) { console.error('Error deleting product:', error); showToast('Error deleting product', 'error'); }
+        }
+
+        // Suppliers
+        async function loadSuppliers() {
+            try {
+                const tbody = document.getElementById('suppliersTable');
+                tbody.innerHTML = '<tr><td colspan="6"><div class="skeleton" style="height:18px"></div></td></tr>'.repeat(5);
+                const suppliers = await apiFetch(`${API_URL}/suppliers`);
+                
+                suppliers.forEach(s => {
+                    tbody.innerHTML += `<tr>
+                        <td>${s.SupplierID}</td>
+                        <td>${s.SupplierName}</td>
+                        <td>${s.ContactPerson || 'N/A'}</td>
+                        <td>${s.Phone || 'N/A'}</td>
+                        <td>${s.Email || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editSupplier(${s.SupplierID})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteSupplier(${s.SupplierID})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+            } catch (error) {
+                console.error('Error loading suppliers:', error);
+            }
+        }
+
+        function openSupplierModal() {
+            document.getElementById('supplierModalTitle').textContent = 'Add Supplier';
+            document.getElementById('supplierForm').reset();
+            document.getElementById('supplierId').value = '';
+        }
+
+        async function editSupplier(id) {
+            try {
+                const supplier = await apiFetch(`${API_URL}/suppliers/${id}`); // Fetch specific supplier
+                
+                document.getElementById('supplierModalTitle').textContent = 'Edit Supplier';
+                document.getElementById('supplierId').value = supplier.SupplierID;
+                document.getElementById('supplierName').value = supplier.SupplierName;
+                document.getElementById('supplierContact').value = supplier.ContactPerson || '';
+                document.getElementById('supplierPhone').value = supplier.Phone || '';
+                document.getElementById('supplierEmail').value = supplier.Email || '';
+                document.getElementById('supplierAddress').value = supplier.Address || '';
+                
+                new bootstrap.Modal(document.getElementById('supplierModal')).show();
+            } catch (error) {
+                console.error('Error loading supplier:', error);
+            }
+        }
+
+        async function saveSupplier() {
+            const id = document.getElementById('supplierId').value;
+            const data = {
+                SupplierName: document.getElementById('supplierName').value,
+                ContactPerson: document.getElementById('supplierContact').value,
+                Phone: document.getElementById('supplierPhone').value,
+                Email: document.getElementById('supplierEmail').value,
+                Address: document.getElementById('supplierAddress').value
+            };
+            
+            try {
+                const url = id ? `${API_URL}/suppliers/${id}` : `${API_URL}/suppliers`;
+                const method = id ? 'PUT' : 'POST';
+                const response = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+                if (response.ok) { bootstrap.Modal.getInstance(document.getElementById('supplierModal')).hide(); loadSuppliers(); showToast('Supplier saved successfully!', 'success'); }
+                else { const errorData = await response.json(); showToast('Error saving supplier: ' + (errorData.error || 'Unknown error'), 'error'); }
+            } catch (error) { console.error('Error saving supplier:', error); showToast('Error saving supplier', 'error'); }
+        }
+
+        async function deleteSupplier(id) {
+            if (!confirm('Are you sure you want to delete this supplier?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/suppliers/${id}`, { method: 'DELETE' });
+                if (response.ok) { loadSuppliers(); showToast('Supplier deleted successfully!', 'success'); }
+                else { const errorData = await response.json(); showToast('Error deleting supplier: ' + (errorData.error || 'Unknown error'), 'error'); }
+            } catch (error) { console.error('Error deleting supplier:', error); showToast('Error deleting supplier', 'error'); }
+        }
+
+        // Customers
+        async function loadCustomers() {
+            try {
+                const tbody = document.getElementById('customersTable');
+                tbody.innerHTML = '<tr><td colspan="6"><div class="skeleton" style="height:18px"></div></td></tr>'.repeat(5);
+                const customers = await apiFetch(`${API_URL}/customers`);
+                
+                customers.forEach(c => {
+                    tbody.innerHTML += `<tr>
+                        <td>${c.CustomerID}</td>
+                        <td>${c.CustomerName}</td>
+                        <td>${c.Phone || 'N/A'}</td>
+                        <td>${c.Email || 'N/A'}</td>
+                        <td>${c.Address || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editCustomer(${c.CustomerID})">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(${c.CustomerID})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>`;
+                });
+            } catch (error) {
+                console.error('Error loading customers:', error);
+            }
+        }
+
+        function openCustomerModal() {
+            document.getElementById('customerModalTitle').textContent = 'Add Customer';
+            document.getElementById('customerForm').reset();
+            document.getElementById('customerId').value = '';
+        }
+
+        async function editCustomer(id) {
+            try {
+                const customer = await apiFetch(`${API_URL}/customers/${id}`); // Fetch specific customer
+                
+                document.getElementById('customerModalTitle').textContent = 'Edit Customer';
+                document.getElementById('customerId').value = customer.CustomerID;
+                document.getElementById('customerName').value = customer.CustomerName;
+                document.getElementById('customerPhone').value = customer.Phone || '';
+                document.getElementById('customerEmail').value = customer.Email || '';
+                document.getElementById('customerAddress').value = customer.Address || '';
+                
+                new bootstrap.Modal(document.getElementById('customerModal')).show();
+            } catch (error) {
+                console.error('Error loading customer:', error);
+            }
+        }
+
+        async function saveCustomer() {
+            const id = document.getElementById('customerId').value;
+            const data = {
+                CustomerName: document.getElementById('customerName').value,
+                Phone: document.getElementById('customerPhone').value,
+                Email: document.getElementById('customerEmail').value,
+                Address: document.getElementById('customerAddress').value
+            };
+            
+            try {
+                const url = id ? `${API_URL}/customers/${id}` : `${API_URL}/customers`;
+                const method = id ? 'PUT' : 'POST';
+                const response = await fetch(url, { method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+                if (response.ok) { bootstrap.Modal.getInstance(document.getElementById('customerModal')).hide(); loadCustomers(); showToast('Customer saved successfully!', 'success'); }
+                else { const errorData = await response.json(); showToast('Error saving customer: ' + (errorData.error || 'Unknown error'), 'error'); }
+            } catch (error) { console.error('Error saving customer:', error); showToast('Error saving customer', 'error'); }
+        }
+
+        async function deleteCustomer(id) {
+            if (!confirm('Are you sure you want to delete this customer?')) return;
+            
+            try {
+                const response = await fetch(`${API_URL}/customers/${id}`, { method: 'DELETE' });
+                if (response.ok) { loadCustomers(); showToast('Customer deleted successfully!', 'success'); }
+                else { const errorData = await response.json(); showToast('Error deleting customer: ' + (errorData.error || 'Unknown error'), 'error'); }
+            } catch (error) { console.error('Error deleting customer:', error); showToast('Error deleting customer', 'error'); }
+        }
+
+        // Sales
+        async function loadSales() {
+            try {
+                const tbody = document.getElementById('salesTable');
+                tbody.innerHTML = '<tr><td colspan="6"><div class="skeleton" style="height:18px"></div></td></tr>'.repeat(5);
+                const sales = await apiFetch(`${API_URL}/sales`);
+                
+                sales.forEach(s => {
+                    const date = new Date(s.SaleDate).toLocaleString();
+                    tbody.innerHTML += `<tr>
+                        <td>${s.SaleID}</td>
+                        <td>${s.ProductName}</td>
+                        <td>${s.CustomerName}</td>
+                        <td>${s.QuantitySold}</td>
+                        <td>₹${parseFloat(s.TotalAmount).toLocaleString()}</td>
+                        <td>${date}</td>
+                    </tr>`;
+                });
+            } catch (error) {
+                console.error('Error loading sales:', error);
+            }
+        }
+
+        async function openSaleModal() {
+            document.getElementById('saleForm').reset();
+            await loadProductDropdown('saleProduct');
+            await loadCustomerDropdown('saleCustomer');
+        }
+
+        async function loadProductDropdown(elementId) {
+            try {
+                const products = await apiFetch(`${API_URL}/products`);
+                
+                const select = document.getElementById(elementId);
+                select.innerHTML = '<option value="">Select Product</option>';
+                products.forEach(p => {
+                    select.innerHTML += `<option value="${p.ProductID}">${p.ProductName} (Stock: ${p.Quantity})</option>`;
+                });
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        async function loadCustomerDropdown(elementId) {
+            try {
+                const customers = await apiFetch(`${API_URL}/customers`);
+                
+                const select = document.getElementById(elementId);
+                select.innerHTML = '<option value="">Select Customer</option>';
+                customers.forEach(c => {
+                    select.innerHTML += `<option value="${c.CustomerID}">${c.CustomerName}</option>`;
+                });
+            } catch (error) {
+                console.error('Error loading customers:', error);
+            }
+        }
+
+        async function saveSale() {
+            const data = {
+                ProductID: parseInt(document.getElementById('saleProduct').value),
+                CustomerID: parseInt(document.getElementById('saleCustomer').value),
+                QuantitySold: parseInt(document.getElementById('saleQuantity').value)
+            };
+            
+            if (!data.ProductID || !data.CustomerID || !data.QuantitySold) {
+                alert('Please fill all required fields');
+                return;
+            }
+            
+            try {
+                const btn = document.querySelector('#saleModal .btn.btn-primary');
+                btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Recording...';
+                const response = await fetch(`${API_URL}/sales`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('saleModal')).hide();
+                    loadSales();
+                    loadDashboard();
+                    showToast('Sale recorded successfully!', 'success');
+                } else {
+                    showToast(result.error || 'Error recording sale', 'error');
+                }
+            } catch (error) {
+                console.error('Error saving sale:', error);
+                showToast('Error recording sale', 'error');
+            } finally {
+                const btn = document.querySelector('#saleModal .btn.btn-primary');
+                btn.disabled = false; btn.innerHTML = 'Record Sale';
+            }
+        }
+
+        // Purchases
+        async function loadPurchases() {
+            try {
+                const tbody = document.getElementById('purchasesTable');
+                tbody.innerHTML = '<tr><td colspan="7"><div class="skeleton" style="height:18px"></div></td></tr>'.repeat(5);
+                const purchases = await apiFetch(`${API_URL}/purchases`);
+                
+                purchases.forEach(p => {
+                    const date = new Date(p.PurchaseDate).toLocaleString();
+                    tbody.innerHTML += `<tr>
+                        <td>${p.PurchaseID}</td>
+                        <td>${p.ProductName}</td>
+                        <td>${p.SupplierName}</td>
+                        <td>${p.QuantityPurchased}</td>
+                        <td>₹${parseFloat(p.UnitCost).toLocaleString()}</td>
+                        <td>₹${parseFloat(p.TotalCost).toLocaleString()}</td>
+                        <td>${date}</td>
+                    </tr>`;
+                });
+            } catch (error) {
+                console.error('Error loading purchases:', error);
+            }
+        }
+
+        async function openPurchaseModal() {
+            document.getElementById('purchaseForm').reset();
+            await loadProductDropdown('purchaseProduct');
+            await loadSupplierDropdown('purchaseSupplier');
+        }
+
+        async function savePurchase() {
+            const data = {
+                ProductID: parseInt(document.getElementById('purchaseProduct').value),
+                SupplierID: parseInt(document.getElementById('purchaseSupplier').value),
+                QuantityPurchased: parseInt(document.getElementById('purchaseQuantity').value),
+                UnitCost: parseFloat(document.getElementById('purchaseCost').value)
+            };
+            
+            if (!data.ProductID || !data.SupplierID || !data.QuantityPurchased || !data.UnitCost) {
+                alert('Please fill all required fields');
+                return;
+            }
+            
+            try {
+                const btn = document.querySelector('#purchaseModal .btn.btn-primary');
+                btn.disabled = true; btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Recording...';
+                const response = await fetch(`${API_URL}/purchases`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data) });
+                if (response.ok) { bootstrap.Modal.getInstance(document.getElementById('purchaseModal')).hide(); loadPurchases(); loadDashboard(); showToast('Purchase recorded successfully!', 'success'); }
+                else { const errorData = await response.json(); showToast('Error recording purchase: ' + (errorData.error || 'Unknown error'), 'error'); }
+            } catch (error) { console.error('Error saving purchase:', error); showToast('Error recording purchase', 'error'); }
+            finally { const btn = document.querySelector('#purchaseModal .btn.btn-primary'); btn.disabled = false; btn.innerHTML = 'Record Purchase'; }
+        }
+
+        // Reports
+        async function loadReport(reportType) {
+            try {
+                let url, title;
+                
+                switch(reportType) {
+                    case 'TopProducts':
+                        url = `${API_URL}/reports/top-products`;
+                        title = 'Top Selling Products';
+                        break;
+                    case 'LowStock':
+                        url = `${API_URL}/reports/low-stock`;
+                        title = 'Low Stock Products';
+                        break;
+                    case 'SalesSummary':
+                        url = `${API_URL}/reports/sales-summary`;
+                        title = 'Sales Summary';
+                        break;
+                    default:
+                        console.error('Unknown report type:', reportType);
+                        return;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                document.getElementById('reportTitle').textContent = title;
+                const contentDiv = document.getElementById('reportContent');
+                
+                if (data.length === 0) {
+                    contentDiv.innerHTML = '<p class="text-muted">No data available</p>';
+                    return;
+                }
+                
+                let html = '<table class="table table-striped"><thead><tr>';
+                
+                // Generate table headers
+                Object.keys(data[0]).forEach(key => {
+                    html += `<th>${key}</th>`;
+                });
+                html += '</tr></thead><tbody>';
+                
+                // Generate table rows
+                data.forEach(row => {
+                    html += '<tr>';
+                    Object.values(row).forEach(value => {
+                        if (typeof value === 'number' && value > 1000) {
+                            html += `<td>₹${value.toLocaleString()}</td>`;
+                        } else if (value instanceof Date || (typeof value === 'string' && value.includes('T'))) {
+                            html += `<td>${new Date(value).toLocaleString()}</td>`;
+                        } else {
+                            html += `<td>${value}</td>`;
+                        }
+                    });
+                    html += '</tr>';
+                });
+                html += '</tbody></table>';
+                
+                contentDiv.innerHTML = html;
+            } catch (error) {
+                console.error('Error loading report:', error);
+            }
+        }
+
+        // Initialize dashboard on page load
+        window.onload = function() {
+            loadDashboard();
+        };
+    </script>
+</body>
+</html>
