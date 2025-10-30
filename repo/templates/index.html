@@ -54,6 +54,11 @@
             border-bottom: 1px solid var(--bs-border-color);
             transition: background-color 0.3s ease, border-color 0.3s ease;
         }
+        .navbar.scrolled { 
+            box-shadow: var(--bs-box-shadow); 
+            border-bottom-color: transparent; 
+            backdrop-filter: saturate(180%) blur(6px);
+        }
         .navbar-brand {
             font-weight: 700;
             color: var(--primary-color);
@@ -210,11 +215,42 @@
             padding: 0.75rem;
         }
         
+        /* --- Responsive Tweaks --- */
+        @media (max-width: 991.98px) {
+            .content-area { padding: 1rem; }
+            .page-header { flex-wrap: wrap; gap: .75rem; }
+            .table-container { padding: 1rem; }
+
+            /* Off-canvas sidebar */
+            .sidebar {
+                position: fixed;
+                top: 57px;
+                left: 0;
+                height: calc(100vh - 57px);
+                width: 260px;
+                z-index: 1040;
+                background-color: #fff;
+                transform: translateX(-100%);
+                box-shadow: var(--bs-box-shadow-lg);
+                transition: transform .3s ease;
+            }
+            .sidebar.open { transform: translateX(0); }
+            .content-area { margin-left: 0 !important; }
+        }
+        @media (max-width: 575.98px) {
+            table th, table td { padding: .75rem .5rem; }
+            .stat-card .fs-1 { font-size: 2rem !important; }
+        }
+        
         /* --- Buttons --- */
         .btn {
             border-radius: var(--bs-border-radius);
             font-weight: 500;
             transition: all 0.2s ease;
+        }
+        .btn:focus-visible { 
+            outline: 0; 
+            box-shadow: 0 0 0 0.25rem rgba(var(--primary-color-rgb), 0.35);
         }
         .btn-primary {
             box-shadow: 0 2px 6px rgba(var(--primary-color-rgb), 0.3);
@@ -236,6 +272,9 @@
         .form-control:focus, .form-select:focus {
             box-shadow: 0 0 0 0.25rem rgba(var(--primary-color-rgb), 0.25);
             border-color: var(--primary-color);
+        }
+        .form-control:focus-visible, .form-select:focus-visible {
+            outline: none;
         }
         .form-floating > .form-control,
         .form-floating > .form-select {
@@ -445,9 +484,14 @@
                 <i class="bi bi-box-seam"></i> 
                 <span>Smart Inventory</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+            <div class="d-flex align-items-center gap-2">
+                <button id="sidebarToggle" class="btn btn-outline-primary btn-sm d-lg-none" type="button" aria-label="Toggle sidebar">
+                    <i class="bi bi-list"></i>
+                </button>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
+                    <i class="bi bi-three-dots-vertical"></i>
+                </button>
+            </div>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto align-items-center">
                     <li class="nav-item">
@@ -460,13 +504,13 @@
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle me-1"></i> Admin
+                            <i class="bi bi-person-circle me-1"></i> <span id="navUserLabel">Guest</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="#"><i class="bi bi-person-fill me-2"></i> Profile</a></li>
                             <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i> Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -626,6 +670,11 @@
                             <i class="bi bi-plus-circle me-1"></i> Add Supplier
                         </button>
                     </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <input id="supplierSearch" type="search" class="form-control" placeholder="Search by name, contact, phone, or email..." />
+                        </div>
+                    </div>
                     <div class="table-container">
                         <table class="table table-hover align-middle">
                             <thead>
@@ -653,6 +702,11 @@
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#customerModal" onclick="openCustomerModal()">
                             <i class="bi bi-plus-circle me-1"></i> Add Customer
                         </button>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <input id="customerSearch" type="search" class="form-control" placeholder="Search by name, phone, email, or address..." />
+                        </div>
                     </div>
                     <div class="table-container">
                         <table class="table table-hover align-middle">
@@ -682,6 +736,11 @@
                             <i class="bi bi-plus-circle me-1"></i> Record Sale
                         </button>
                     </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <input id="salesSearch" type="search" class="form-control" placeholder="Search by sale id, product, or customer..." />
+                        </div>
+                    </div>
                     <div class="table-container">
                         <table class="table table-hover align-middle">
                             <thead>
@@ -709,6 +768,11 @@
                         <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#purchaseModal" onclick="openPurchaseModal()">
                             <i class="bi bi-plus-circle me-1"></i> Record Purchase
                         </button>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <input id="purchasesSearch" type="search" class="form-control" placeholder="Search by purchase id, product, or supplier..." />
+                        </div>
                     </div>
                     <div class="table-container">
                         <table class="table table-hover align-middle">
@@ -770,6 +834,8 @@
         <div id="toastContainer"></div>
     </div>
 
+    
+
     <div class="modal fade" id="productModal" tabindex="-1" aria-labelledby="productModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -781,34 +847,40 @@
                     <form id="productForm">
                         <input type="hidden" id="productId">
                         <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="productName" placeholder="Product Name" required>
+                            <input type="text" class="form-control" id="productName" placeholder="Product Name" required pattern="^[A-Za-z][A-Za-z\s'\-.]{1,}$" inputmode="text" maxlength="100" autocomplete="off" aria-describedby="productNameFeedback">
                             <label for="productName">Product Name *</label>
+                            <div id="productNameFeedback" class="invalid-feedback">Enter a valid name: letters, spaces, apostrophes, hyphens, dots; min 2 chars.</div>
                         </div>
                         <div class="form-floating mb-3">
-                            <textarea class="form-control" id="productDescription" placeholder="Description" style="height: 100px"></textarea>
+                            <textarea class="form-control" id="productDescription" placeholder="Description" style="height: 100px" maxlength="300" aria-describedby="productDescriptionFeedback"></textarea>
                             <label for="productDescription">Description</label>
+                            <div id="productDescriptionFeedback" class="invalid-feedback">Max 300 characters.</div>
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="productCategory" placeholder="Category">
+                            <input type="text" class="form-control" id="productCategory" placeholder="Category" pattern="^[A-Za-z][A-Za-z\s'\-/\.]{1,}$" inputmode="text" maxlength="60" aria-describedby="productCategoryFeedback">
                             <label for="productCategory">Category</label>
+                            <div id="productCategoryFeedback" class="invalid-feedback">Use letters, spaces, apostrophes, hyphens, slashes, dots; min 2 chars.</div>
                         </div>
                         <div class="row g-2 mb-3">
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="number" step="0.01" min="0" class="form-control" id="productPrice" placeholder="Price" required>
+                                    <input type="number" step="0.01" min="0.01" class="form-control" id="productPrice" placeholder="Price" required aria-describedby="productPriceFeedback">
                                     <label for="productPrice">Price *</label>
+                                    <div id="productPriceFeedback" class="invalid-feedback">Enter a positive price (min 0.01).</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="number" min="0" class="form-control" id="productQuantity" placeholder="Quantity" required>
+                                    <input type="number" min="0" step="1" class="form-control" id="productQuantity" placeholder="Quantity" required aria-describedby="productQuantityFeedback">
                                     <label for="productQuantity">Quantity *</label>
+                                    <div id="productQuantityFeedback" class="invalid-feedback">Enter a whole number 0 or greater.</div>
                                 </div>
                             </div>
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="number" min="0" class="form-control" id="productReorder" value="10" placeholder="Reorder Level">
+                            <input type="number" min="0" step="1" class="form-control" id="productReorder" value="10" placeholder="Reorder Level" aria-describedby="productReorderFeedback">
                             <label for="productReorder">Reorder Level</label>
+                            <div id="productReorderFeedback" class="invalid-feedback">Enter a whole number 0 or greater.</div>
                         </div>
                         <div class="form-floating">
                             <select class="form-select" id="productSupplier" aria-label="Supplier Select"></select>
@@ -835,24 +907,29 @@
                     <form id="supplierForm">
                         <input type="hidden" id="supplierId">
                         <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="supplierName" placeholder="Supplier Name" required>
+                            <input type="text" class="form-control" id="supplierName" placeholder="Supplier Name" required pattern="^[A-Za-z][A-Za-z\s'\-.]{1,}$" inputmode="text" maxlength="100" autocomplete="off" aria-describedby="supplierNameFeedback">
                             <label for="supplierName">Supplier Name *</label>
+                            <div id="supplierNameFeedback" class="invalid-feedback">Enter a valid name: letters, spaces, apostrophes, hyphens, dots; min 2 chars.</div>
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="supplierContact" placeholder="Contact Person">
+                            <input type="text" class="form-control" id="supplierContact" placeholder="Contact Person" pattern="^[A-Za-z][A-Za-z\s'\-.]{1,}$" inputmode="text" maxlength="100" aria-describedby="supplierContactFeedback">
                             <label for="supplierContact">Contact Person</label>
+                            <div id="supplierContactFeedback" class="invalid-feedback">Enter a valid name (letters, spaces, apostrophes, hyphens, dots).</div>
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="tel" class="form-control" id="supplierPhone" placeholder="Phone">
+                            <input type="tel" class="form-control" id="supplierPhone" placeholder="Phone" inputmode="tel" pattern="^\+?[0-9\s().-]{7,20}$" maxlength="20" aria-describedby="supplierPhoneFeedback">
                             <label for="supplierPhone">Phone</label>
+                            <div id="supplierPhoneFeedback" class="invalid-feedback">Enter a valid phone (7-20 chars, digits, +, space, (), ., -).</div>
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="email" class="form-control" id="supplierEmail" placeholder="Email">
+                            <input type="email" class="form-control" id="supplierEmail" placeholder="Email" maxlength="120" aria-describedby="supplierEmailFeedback">
                             <label for="supplierEmail">Email</label>
+                            <div id="supplierEmailFeedback" class="invalid-feedback">Enter a valid email address.</div>
                         </div>
                         <div class="form-floating">
-                            <textarea class="form-control" id="supplierAddress" placeholder="Address" style="height: 100px"></textarea>
+                            <textarea class="form-control" id="supplierAddress" placeholder="Address" style="height: 100px" maxlength="200" aria-describedby="supplierAddressFeedback"></textarea>
                             <label for="supplierAddress">Address</label>
+                            <div id="supplierAddressFeedback" class="invalid-feedback">Max 200 characters.</div>
                         </div>
                     </form>
                 </div>
@@ -875,20 +952,24 @@
                     <form id="customerForm">
                         <input type="hidden" id="customerId">
                         <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="customerName" placeholder="Customer Name" required>
+                            <input type="text" class="form-control" id="customerName" placeholder="Customer Name" required pattern="^[A-Za-z][A-Za-z\s'\-.]{1,}$" inputmode="text" maxlength="100" autocomplete="off" aria-describedby="customerNameFeedback">
                             <label for="customerName">Customer Name *</label>
+                            <div id="customerNameFeedback" class="invalid-feedback">Enter a valid name: letters, spaces, apostrophes, hyphens, dots; min 2 chars.</div>
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="tel" class="form-control" id="customerPhone" placeholder="Phone">
+                            <input type="tel" class="form-control" id="customerPhone" placeholder="Phone" inputmode="tel" pattern="^\+?[0-9\s().-]{7,20}$" maxlength="20" aria-describedby="customerPhoneFeedback">
                             <label for="customerPhone">Phone</label>
+                            <div id="customerPhoneFeedback" class="invalid-feedback">Enter a valid phone (7-20 chars, digits, +, space, (), ., -).</div>
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="email" class="form-control" id="customerEmail" placeholder="Email">
+                            <input type="email" class="form-control" id="customerEmail" placeholder="Email" maxlength="120" aria-describedby="customerEmailFeedback">
                             <label for="customerEmail">Email</label>
+                            <div id="customerEmailFeedback" class="invalid-feedback">Enter a valid email address.</div>
                         </div>
                         <div class="form-floating">
-                            <textarea class="form-control" id="customerAddress" placeholder="Address" style="height: 100px"></textarea>
+                            <textarea class="form-control" id="customerAddress" placeholder="Address" style="height: 100px" maxlength="200" aria-describedby="customerAddressFeedback"></textarea>
                             <label for="customerAddress">Address</label>
+                            <div id="customerAddressFeedback" class="invalid-feedback">Max 200 characters.</div>
                         </div>
                     </form>
                 </div>
@@ -910,16 +991,19 @@
                 <div class="modal-body">
                     <form id="saleForm">
                         <div class="form-floating mb-3">
-                            <select class="form-select" id="saleProduct" required aria-label="Product Select"></select>
+                            <select class="form-select" id="saleProduct" required aria-label="Product Select" aria-describedby="saleProductFeedback"></select>
                             <label for="saleProduct">Product *</label>
+                            <div id="saleProductFeedback" class="invalid-feedback">Please select a product.</div>
                         </div>
                         <div class="form-floating mb-3">
-                            <select class="form-select" id="saleCustomer" required aria-label="Customer Select"></select>
+                            <select class="form-select" id="saleCustomer" required aria-label="Customer Select" aria-describedby="saleCustomerFeedback"></select>
                             <label for="saleCustomer">Customer *</label>
+                            <div id="saleCustomerFeedback" class="invalid-feedback">Please select a customer.</div>
                         </div>
                         <div class="form-floating mb-3">
-                            <input type="number" class="form-control" id="saleQuantity" placeholder="Quantity" required min="1">
+                            <input type="number" class="form-control" id="saleQuantity" placeholder="Quantity" required min="1" step="1" aria-describedby="saleQuantityFeedback">
                             <label for="saleQuantity">Quantity *</label>
+                            <div id="saleQuantityFeedback" class="invalid-feedback">Enter a whole number of at least 1.</div>
                         </div>
                         <div class="alert alert-info d-flex align-items-center" role="alert">
                            <i class="bi bi-info-circle flex-shrink-0 me-2"></i>
@@ -945,24 +1029,28 @@
                 <div class="modal-body">
                     <form id="purchaseForm">
                         <div class="form-floating mb-3">
-                            <select class="form-select" id="purchaseProduct" required aria-label="Product Select"></select>
+                            <select class="form-select" id="purchaseProduct" required aria-label="Product Select" aria-describedby="purchaseProductFeedback"></select>
                             <label for="purchaseProduct">Product *</label>
+                            <div id="purchaseProductFeedback" class="invalid-feedback">Please select a product.</div>
                         </div>
                         <div class="form-floating mb-3">
-                            <select class="form-select" id="purchaseSupplier" required aria-label="Supplier Select"></select>
+                            <select class="form-select" id="purchaseSupplier" required aria-label="Supplier Select" aria-describedby="purchaseSupplierFeedback"></select>
                             <label for="purchaseSupplier">Supplier *</label>
+                            <div id="purchaseSupplierFeedback" class="invalid-feedback">Please select a supplier.</div>
                         </div>
                         <div class="row g-2 mb-3">
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="number" class="form-control" id="purchaseQuantity" placeholder="Quantity" required min="1">
+                                    <input type="number" class="form-control" id="purchaseQuantity" placeholder="Quantity" required min="1" step="1" aria-describedby="purchaseQuantityFeedback">
                                     <label for="purchaseQuantity">Quantity *</label>
+                                    <div id="purchaseQuantityFeedback" class="invalid-feedback">Enter a whole number of at least 1.</div>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-floating">
-                                    <input type="number" step="0.01" min="0" class="form-control" id="purchaseCost" placeholder="Unit Cost" required>
+                                    <input type="number" step="0.01" min="0.01" class="form-control" id="purchaseCost" placeholder="Unit Cost" required aria-describedby="purchaseCostFeedback">
                                     <label for="purchaseCost">Unit Cost *</label>
+                                    <div id="purchaseCostFeedback" class="invalid-feedback">Enter a positive cost (min 0.01).</div>
                                 </div>
                             </div>
                         </div>
@@ -1015,10 +1103,16 @@
              }
         }
 
+        function getAuthToken(){ try { return localStorage.getItem('authToken') || ''; } catch { return ''; } }
+        function setAuth(token){ try { localStorage.setItem('authToken', token||''); } catch {} }
+        function clearAuth(){ try { localStorage.removeItem('authToken'); } catch {} }
+
         async function apiFetch(url, options = {}, { useOverlay = false } = {}) {
             // No global overlay used anymore
             try {
-                const defaultHeaders = { 'Content-Type': 'application/json', 'Accept': 'application/json', ...options.headers };
+                const token = getAuthToken();
+                const authHeader = token ? { 'Authorization': `Bearer ${token}` } : {};
+                const defaultHeaders = { 'Content-Type': 'application/json', 'Accept': 'application/json', ...authHeader, ...options.headers };
                 const fetchOptions = { ...options, headers: defaultHeaders };
                  // Ensure body is stringified only if it's a JS object and method is not GET/HEAD
                  if (fetchOptions.body && typeof fetchOptions.body !== 'string' && !(['GET', 'HEAD'].includes(fetchOptions.method?.toUpperCase()))) {
@@ -1043,6 +1137,10 @@
 
 
                 if (!res.ok) {
+                    if (res.status === 401) {
+                        clearAuth();
+                        try { window.location.href = '/'; } catch {}
+                    }
                     let errorMsg = `Request failed (${res.status} ${res.statusText})`;
                     // Prioritize backend JSON error message
                     if (isJson && body && body.error) {
@@ -1114,6 +1212,13 @@
                   console.error("Error creating chart:", e);
                   showToast("Could not display chart.", "error");
              }
+        }
+
+        // --- Formatters ---
+        const INR = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 });
+        function formatCurrency(value) {
+            const num = Number(value || 0);
+            return Number.isFinite(num) ? INR.format(num) : '₹0';
         }
 
         // --- Theme Toggle ---
@@ -1350,6 +1455,8 @@
         async function loadProducts() {
             renderProductSkeleton();
             productsData = await apiFetch(`${API_URL}/products`); // Propagates error
+            // Sort by ProductID ascending
+            productsData = Array.isArray(productsData) ? productsData.slice().sort((a,b) => (a?.ProductID||0) - (b?.ProductID||0)) : [];
             productsFiltered = productsData;
             productsPage = 1;
             wireProductControls();
@@ -1512,8 +1619,17 @@
             } catch (error) { showToast(`Error deleting product: ${error.message}`, 'error'); }
         }
 
-        // --- Suppliers (CRUD) ---
+        // --- Suppliers (CRUD + Search) ---
+        let suppliersData = [];
+        let suppliersFiltered = [];
         const suppliersTableBody = document.getElementById('suppliersTable');
+        let supplierControlsWired = false;
+        function wireSupplierControls(){
+            if (supplierControlsWired) return;
+            const search = document.getElementById('supplierSearch');
+            if (search) search.addEventListener('input', filterSuppliers);
+            supplierControlsWired = true;
+        }
         function renderSupplierSkeleton() { /* ... */
              if (!suppliersTableBody) return;
               let s = ''; for(let i=0; i<3; i++) s += `<tr><td colspan="6"><div class="skeleton my-2" style="height:20px"></div></td></tr>`;
@@ -1521,10 +1637,29 @@
         }
         async function loadSuppliers() {
             renderSupplierSkeleton();
-            const suppliers = await apiFetch(`${API_URL}/suppliers`); // Propagates error
+            suppliersData = await apiFetch(`${API_URL}/suppliers`); // Propagates error
+            suppliersData = Array.isArray(suppliersData) ? suppliersData.slice().sort((a,b) => (a?.SupplierID||0) - (b?.SupplierID||0)) : [];
+            suppliersFiltered = suppliersData;
+            wireSupplierControls();
+            renderSuppliers();
+        }
+        function filterSuppliers(){
+            const q = document.getElementById('supplierSearch')?.value?.toLowerCase() || '';
+            suppliersFiltered = suppliersData.filter(s =>
+                String(s.SupplierID||'').includes(q) ||
+                (s.SupplierName||'').toLowerCase().includes(q) ||
+                (s.ContactPerson||'').toLowerCase().includes(q) ||
+                (s.Phone||'').toLowerCase().includes(q) ||
+                (s.Email||'').toLowerCase().includes(q)
+            );
+            renderSuppliers();
+        }
+        function renderSuppliers(){
             if (!suppliersTableBody) return;
-            if (suppliers.length === 0) { suppliersTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No suppliers found.</td></tr>'; return; }
-            let t = ''; suppliers.forEach(s => t += `<tr><td>${s.SupplierID}</td><td>${s.SupplierName||'N/A'}</td><td>${s.ContactPerson||'N/A'}</td><td>${s.Phone||'N/A'}</td><td>${s.Email||'N/A'}</td><td class="text-end"><button class="btn btn-sm btn-outline-primary" onclick="editSupplier(${s.SupplierID})" title="Edit"><i class="bi bi-pencil-fill"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="deleteSupplier(${s.SupplierID})" title="Delete"><i class="bi bi-trash-fill"></i></button></td></tr>`); suppliersTableBody.innerHTML = t;
+            if (suppliersFiltered.length === 0) { suppliersTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No suppliers found.</td></tr>'; return; }
+            let t = '';
+            suppliersFiltered.forEach(s => t += `<tr><td>${s.SupplierID}</td><td>${s.SupplierName||'N/A'}</td><td>${s.ContactPerson||'N/A'}</td><td>${s.Phone||'N/A'}</td><td>${s.Email||'N/A'}</td><td class="text-end"><button class="btn btn-sm btn-outline-primary" onclick="editSupplier(${s.SupplierID})" title="Edit"><i class="bi bi-pencil-fill"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="deleteSupplier(${s.SupplierID})" title="Delete"><i class="bi bi-trash-fill"></i></button></td></tr>`);
+            suppliersTableBody.innerHTML = t;
         }
         function openSupplierModal(supplier = null) { /* ... */
              const m=document.getElementById('supplierModal'), t=document.getElementById('supplierModalTitle'), f=document.getElementById('supplierForm'); if(!m||!t||!f)return; f.reset(); document.getElementById('supplierId').value=''; if(supplier){t.textContent='Edit';document.getElementById('supplierId').value=supplier.SupplierID;document.getElementById('supplierName').value=supplier.SupplierName;document.getElementById('supplierContact').value=supplier.ContactPerson||'';document.getElementById('supplierPhone').value=supplier.Phone||'';document.getElementById('supplierEmail').value=supplier.Email||'';document.getElementById('supplierAddress').value=supplier.Address||'';}else{t.textContent='Add';} bootstrap.Modal.getOrCreateInstance(m).show();
@@ -1535,14 +1670,38 @@
          }
         async function deleteSupplier(id) { /* ... */ if(!confirm(`Delete supplier ${id}?`))return; try {showToast("Deleting...", "info"); await apiFetch(`${API_URL}/suppliers/${id}`,{method:'DELETE'}); showToast('Deleted!','success'); await loadSuppliers(); if(document.getElementById('products-section').classList.contains('active')) await loadProducts();} catch(e){showToast(`Delete failed: ${e.message}`,'error');}}
 
-        // --- Customers (CRUD) ---
+        // --- Customers (CRUD + Search) ---
+        let customersData = [];
+        let customersFiltered = [];
         const customersTableBody = document.getElementById('customersTable');
+        let customerControlsWired = false;
+        function wireCustomerControls(){ if(customerControlsWired) return; const s=document.getElementById('customerSearch'); if(s) s.addEventListener('input', filterCustomers); customerControlsWired = true; }
         function renderCustomerSkeleton() { /* ... */ if(!customersTableBody)return; let s=''; for(let i=0;i<3;i++)s+=`<tr><td colspan="6"><div class="skeleton my-2" style="height:20px"></div></td></tr>`; customersTableBody.innerHTML=s;}
         async function loadCustomers() { /* ... */
              renderCustomerSkeleton();
-             const customers = await apiFetch(`${API_URL}/customers`); // Propagates error
-             if(!customersTableBody)return; if(customers.length===0){customersTableBody.innerHTML='<tr><td colspan="6" class="text-center text-muted py-4">No customers found.</td></tr>'; return;} let t=''; customers.forEach(c=>t+=`<tr><td>${c.CustomerID}</td><td>${c.CustomerName||'N/A'}</td><td>${c.Phone||'N/A'}</td><td>${c.Email||'N/A'}</td><td>${c.Address||'N/A'}</td><td class="text-end"><button class="btn btn-sm btn-outline-primary" onclick="editCustomer(${c.CustomerID})" title="Edit"><i class="bi bi-pencil-fill"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(${c.CustomerID})" title="Delete"><i class="bi bi-trash-fill"></i></button></td></tr>`); customersTableBody.innerHTML=t;
+             customersData = await apiFetch(`${API_URL}/customers`); // Propagates error
+             customersData = Array.isArray(customersData) ? customersData.slice().sort((a,b) => (a?.CustomerID||0) - (b?.CustomerID||0)) : [];
+             customersFiltered = customersData;
+             wireCustomerControls();
+             renderCustomers();
          }
+        function filterCustomers(){
+            const q = document.getElementById('customerSearch')?.value?.toLowerCase() || '';
+            customersFiltered = customersData.filter(c =>
+                String(c.CustomerID||'').includes(q) ||
+                (c.CustomerName||'').toLowerCase().includes(q) ||
+                (c.Phone||'').toLowerCase().includes(q) ||
+                (c.Email||'').toLowerCase().includes(q) ||
+                (c.Address||'').toLowerCase().includes(q)
+            );
+            renderCustomers();
+        }
+        function renderCustomers(){
+            if(!customersTableBody) return;
+            if(customersFiltered.length===0){customersTableBody.innerHTML='<tr><td colspan="6" class="text-center text-muted py-4">No customers found.</td></tr>'; return;}
+            let t=''; customersFiltered.forEach(c=>t+=`<tr><td>${c.CustomerID}</td><td>${c.CustomerName||'N/A'}</td><td>${c.Phone||'N/A'}</td><td>${c.Email||'N/A'}</td><td>${c.Address||'N/A'}</td><td class="text-end"><button class="btn btn-sm btn-outline-primary" onclick="editCustomer(${c.CustomerID})" title="Edit"><i class="bi bi-pencil-fill"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(${c.CustomerID})" title="Delete"><i class="bi bi-trash-fill"></i></button></td></tr>`);
+            customersTableBody.innerHTML=t;
+        }
         function openCustomerModal(customer = null) { /* ... */ const m=document.getElementById('customerModal'), t=document.getElementById('customerModalTitle'), f=document.getElementById('customerForm'); if(!m||!t||!f)return; f.reset(); document.getElementById('customerId').value=''; if(customer){t.textContent='Edit';document.getElementById('customerId').value=customer.CustomerID;document.getElementById('customerName').value=customer.CustomerName;document.getElementById('customerPhone').value=customer.Phone||'';document.getElementById('customerEmail').value=customer.Email||'';document.getElementById('customerAddress').value=customer.Address||'';}else{t.textContent='Add';} bootstrap.Modal.getOrCreateInstance(m).show();}
         async function editCustomer(id) { /* ... */ try {showToast("Loading...", "info"); const c=await apiFetch(`${API_URL}/customers/${id}`); openCustomerModal(c);} catch(e){showToast(`Load failed: ${e.message}`,'error');}}
         async function saveCustomer() { /* ... */
@@ -1550,14 +1709,35 @@
          }
         async function deleteCustomer(id) { /* ... */ if(!confirm(`Delete customer ${id}?`))return; try {showToast("Deleting...", "info"); await apiFetch(`${API_URL}/customers/${id}`,{method:'DELETE'}); showToast('Deleted!','success'); await loadCustomers(); if(document.getElementById('dashboard-section').classList.contains('active')) await loadDashboard();} catch(e){showToast(`Delete failed: ${e.message}`,'error');}}
 
-        // --- Sales (Read, Create) ---
+        // --- Sales (Read, Create + Search) ---
+        let salesData = [];
+        let salesFiltered = [];
         const salesTableBody = document.getElementById('salesTable');
+        let salesControlsWired = false;
+        function wireSalesControls(){ if(salesControlsWired) return; const s=document.getElementById('salesSearch'); if(s) s.addEventListener('input', filterSales); salesControlsWired = true; }
         function renderSalesSkeleton() { /* ... */ if(!salesTableBody)return; let s=''; for(let i=0;i<3;i++)s+=`<tr><td colspan="6"><div class="skeleton my-2" style="height:20px"></div></td></tr>`; salesTableBody.innerHTML=s;}
         async function loadSales() { /* ... */
              renderSalesSkeleton();
-             const sales = await apiFetch(`${API_URL}/sales`); // Propagates error
-             if(!salesTableBody)return; if(sales.length===0){salesTableBody.innerHTML='<tr><td colspan="6" class="text-center text-muted py-4">No sales recorded.</td></tr>'; return;} let t=''; sales.forEach(s=>{let d='Invalid';try{d=new Date(s.SaleDate).toLocaleString();}catch(e){} t+=`<tr><td>${s.SaleID}</td><td>${s.ProductName||'N/A'}</td><td>${s.CustomerName||'N/A'}</td><td>${s.QuantitySold}</td><td>₹${parseFloat(s.TotalAmount||0).toLocaleString()}</td><td>${d}</td></tr>`;}); salesTableBody.innerHTML=t;
+             salesData = await apiFetch(`${API_URL}/sales`); // Propagates error
+             salesData = Array.isArray(salesData) ? salesData.slice().sort((a,b) => (a?.SaleID||0) - (b?.SaleID||0)) : [];
+             salesFiltered = salesData;
+             wireSalesControls();
+             renderSales();
          }
+        function filterSales(){
+            const q = document.getElementById('salesSearch')?.value?.toLowerCase() || '';
+            salesFiltered = salesData.filter(s =>
+                String(s.SaleID||'').includes(q) ||
+                (s.ProductName||'').toLowerCase().includes(q) ||
+                (s.CustomerName||'').toLowerCase().includes(q)
+            );
+            renderSales();
+        }
+        function renderSales(){
+            if(!salesTableBody) return;
+            if(salesFiltered.length===0){salesTableBody.innerHTML='<tr><td colspan="6" class="text-center text-muted py-4">No sales recorded.</td></tr>'; return;}
+            let t=''; salesFiltered.forEach(s=>{let d='Invalid';try{d=new Date(s.SaleDate).toLocaleString();}catch(e){} t+=`<tr><td>${s.SaleID}</td><td>${s.ProductName||'N/A'}</td><td>${s.CustomerName||'N/A'}</td><td>${s.QuantitySold}</td><td>${formatCurrency(s.TotalAmount)}</td><td>${d}</td></tr>`;}); salesTableBody.innerHTML=t;
+        }
         async function openSaleModal() { /* ... */ const f=document.getElementById('saleForm'); if(!f)return; f.reset(); const pS=document.getElementById('saleProduct'), cS=document.getElementById('saleCustomer'); pS.innerHTML='<option value="">Loading...</option>'; cS.innerHTML='<option value="">Loading...</option>'; const m=document.getElementById('saleModal'); bootstrap.Modal.getOrCreateInstance(m).show(); try {await Promise.all([loadProductDropdown('saleProduct',true),loadCustomerDropdown('saleCustomer')]);} catch(e){showToast("Error loading form data.","error"); pS.innerHTML='<option value="">Error</option>'; cS.innerHTML='<option value="">Error</option>';}}
         async function loadProductDropdown(id, onlyInStock = false) { /* ... */
              const s=document.getElementById(id); if(!s)return; s.innerHTML='<option value="">Loading...</option>'; try {const p=await apiFetch(`${API_URL}/products`); let f=onlyInStock?p.filter(i=>i.Quantity>0):p; s.innerHTML='<option value="">Select Product</option>'; if(f.length===0)s.innerHTML=`<option value="" disabled>No products ${onlyInStock?'in stock':'available'}</option>`; else f.forEach(i=>s.innerHTML+=`<option value="${i.ProductID}">${i.ProductName} (Stock: ${i.Quantity})</option>`);} catch(e){console.error(`Err loading PDD ${id}:`,e); s.innerHTML='<option value="">Error</option>'; throw e;}
@@ -1582,14 +1762,35 @@
              const f=document.getElementById('saleForm'); const pV=document.getElementById('saleProduct').value, cV=document.getElementById('saleCustomer').value, qV=parseInt(document.getElementById('saleQuantity').value); if(!f.checkValidity()||!pV||!cV||qV<=0){f.reportValidity();showToast('Select product, customer, valid qty > 0.','warning');return;} const d={ProductID:parseInt(pV),CustomerID:parseInt(cV),QuantitySold:qV}; const b=document.querySelector('#saleModal .btn-primary'); const o=b.innerHTML; b.disabled=true; b.innerHTML=`<span class="spinner-border spinner-border-sm"></span> Saving...`; try {await apiFetch(`${API_URL}/sales`,{method:'POST',body:d}); bootstrap.Modal.getInstance(document.getElementById('saleModal')).hide(); showToast('Sale recorded!','success'); await loadSales(); if(document.getElementById('dashboard-section').classList.contains('active')) await loadDashboard(); if(document.getElementById('products-section').classList.contains('active')) await loadProducts();} catch(e){showToast(`Save failed: ${e.message}`,'error');} finally {b.disabled=false; b.innerHTML=o;}
          }
 
-        // --- Purchases (Read, Create) ---
+        // --- Purchases (Read, Create + Search) ---
+        let purchasesData = [];
+        let purchasesFiltered = [];
         const purchasesTableBody = document.getElementById('purchasesTable');
+        let purchasesControlsWired = false;
+        function wirePurchasesControls(){ if(purchasesControlsWired) return; const s=document.getElementById('purchasesSearch'); if(s) s.addEventListener('input', filterPurchases); purchasesControlsWired = true; }
         function renderPurchaseSkeleton() { /* ... */ if(!purchasesTableBody)return; let s=''; for(let i=0;i<3;i++)s+=`<tr><td colspan="7"><div class="skeleton my-2" style="height:20px"></div></td></tr>`; purchasesTableBody.innerHTML=s;}
         async function loadPurchases() { /* ... */
              renderPurchaseSkeleton();
-             const purchases = await apiFetch(`${API_URL}/purchases`); // Propagates error
-             if(!purchasesTableBody)return; if(purchases.length===0){purchasesTableBody.innerHTML='<tr><td colspan="7" class="text-center text-muted py-4">No purchases recorded.</td></tr>'; return;} let t=''; purchases.forEach(p=>{let d='Invalid';try{d=new Date(p.PurchaseDate).toLocaleString();}catch(e){} t+=`<tr><td>${p.PurchaseID}</td><td>${p.ProductName||'N/A'}</td><td>${p.SupplierName||'N/A'}</td><td>${p.QuantityPurchased}</td><td>₹${parseFloat(p.UnitCost||0).toLocaleString()}</td><td>₹${parseFloat(p.TotalCost||0).toLocaleString()}</td><td>${d}</td></tr>`;}); purchasesTableBody.innerHTML=t;
+             purchasesData = await apiFetch(`${API_URL}/purchases`); // Propagates error
+             purchasesData = Array.isArray(purchasesData) ? purchasesData.slice().sort((a,b) => (a?.PurchaseID||0) - (b?.PurchaseID||0)) : [];
+             purchasesFiltered = purchasesData;
+             wirePurchasesControls();
+             renderPurchases();
          }
+        function filterPurchases(){
+            const q = document.getElementById('purchasesSearch')?.value?.toLowerCase() || '';
+            purchasesFiltered = purchasesData.filter(p =>
+                String(p.PurchaseID||'').includes(q) ||
+                (p.ProductName||'').toLowerCase().includes(q) ||
+                (p.SupplierName||'').toLowerCase().includes(q)
+            );
+            renderPurchases();
+        }
+        function renderPurchases(){
+            if(!purchasesTableBody) return;
+            if(purchasesFiltered.length===0){purchasesTableBody.innerHTML='<tr><td colspan="7" class="text-center text-muted py-4">No purchases recorded.</td></tr>'; return;}
+            let t=''; purchasesFiltered.forEach(p=>{let d='Invalid';try{d=new Date(p.PurchaseDate).toLocaleString();}catch(e){} t+=`<tr><td>${p.PurchaseID}</td><td>${p.ProductName||'N/A'}</td><td>${p.SupplierName||'N/A'}</td><td>${p.QuantityPurchased}</td><td>${formatCurrency(p.UnitCost)}</td><td>${formatCurrency(p.TotalCost)}</td><td>${d}</td></tr>`;}); purchasesTableBody.innerHTML=t;
+        }
         async function openPurchaseModal() { /* ... */ const f=document.getElementById('purchaseForm'); if(!f)return; f.reset(); const pS=document.getElementById('purchaseProduct'), sS=document.getElementById('purchaseSupplier'); pS.innerHTML='<option value="">Loading...</option>'; sS.innerHTML='<option value="">Loading...</option>'; const m=document.getElementById('purchaseModal'); bootstrap.Modal.getOrCreateInstance(m).show(); try {await Promise.all([loadProductDropdown('purchaseProduct',false),loadSupplierDropdown('purchaseSupplier')]);} catch(e){showToast("Error loading form data.","error"); pS.innerHTML='<option value="">Error</option>'; sS.innerHTML='<option value="">Error</option>';}}
         async function savePurchase() { /* ... */
              const f=document.getElementById('purchaseForm'); const pV=document.getElementById('purchaseProduct').value, sV=document.getElementById('purchaseSupplier').value, qV=parseInt(document.getElementById('purchaseQuantity').value), costV=parseFloat(document.getElementById('purchaseCost').value); if(!f.checkValidity()||!pV||!sV||qV<=0||costV<=0){f.reportValidity();showToast('Select product, supplier, valid qty/cost > 0.','warning');return;} const d={ProductID:parseInt(pV),SupplierID:parseInt(sV),QuantityPurchased:qV,UnitCost:costV}; const b=document.querySelector('#purchaseModal .btn-primary'); const o=b.innerHTML; b.disabled=true; b.innerHTML=`<span class="spinner-border spinner-border-sm"></span> Saving...`; try {await apiFetch(`${API_URL}/purchases`,{method:'POST',body:d}); bootstrap.Modal.getInstance(document.getElementById('purchaseModal')).hide(); showToast('Purchase recorded!','success'); await loadPurchases(); if(document.getElementById('dashboard-section').classList.contains('active')) await loadDashboard(); if(document.getElementById('products-section').classList.contains('active')) await loadProducts();} catch(e){showToast(`Save failed: ${e.message}`,'error');} finally {b.disabled=false; b.innerHTML=o;}
@@ -1627,7 +1828,7 @@
                 
                 contentDiv.innerHTML = `
                     <div class="row g-3">
-                         <div class="col-lg-6" style="min-height: 250px; position: relative;">
+                         <div class="col-lg-6" style="min-height: 320px; height: 360px; position: relative;">
                               <canvas id="reportChart"></canvas>
                          </div>
                          <div class="col-lg-6">
@@ -1639,7 +1840,7 @@
 
                 // Build table
                 let tableHTML = '<thead><tr>'; const headers = Object.keys(data[0]); headers.forEach(key => tableHTML += `<th>${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</th>`); tableHTML += '</tr></thead><tbody>';
-                data.forEach(row => { tableHTML += '<tr>'; headers.forEach(key => { let v=row[key], c=v??'N/A'; if(key.match(/amount|price|cost|revenue|sales/i)&&typeof v==='number')c=`₹${v.toLocaleString()}`; else if(key.match(/date/i))try{c=new Date(v).toLocaleDateString();}catch(e){} else if(key==='Quantity'&&reportType==='LowStock')c=`<span class="badge bg-danger">${v}</span>`; tableHTML+=`<td>${c}</td>`; }); tableHTML+='</tr>'; }); tableHTML+='</tbody>';
+                data.forEach(row => { tableHTML += '<tr>'; headers.forEach(key => { let v=row[key], c=v??'N/A'; if(key.match(/amount|price|cost|revenue|sales/i)&&typeof v==='number')c=formatCurrency(v); else if(key.match(/date/i))try{c=new Date(v).toLocaleDateString();}catch(e){} else if(key==='Quantity'&&reportType==='LowStock')c=`<span class="badge bg-danger">${v}</span>`; tableHTML+=`<td>${c}</td>`; }); tableHTML+='</tr>'; }); tableHTML+='</tbody>';
                 const reportTableEl = document.getElementById('reportTable'); if(reportTableEl) reportTableEl.innerHTML = tableHTML;
 
                 // Chart rendering
@@ -1666,13 +1867,23 @@
         window.addEventListener('DOMContentLoaded', () => {
             // Theme handled by IIFE
             
-            // Load initial data with error handling
-            loadDashboard().catch(err => {
-                console.error("Initial dashboard load failed:", err);
-                showToast(`Failed to load initial dashboard: ${err.message}`, "error");
-                 const dashSection = document.getElementById('dashboard-section');
-                 if (dashSection) dashSection.innerHTML = `<p class="text-danger text-center py-5">Could not load dashboard data. Please refresh the page.</p>`;
-            });
+            // Auth + initial data
+            const navUser = document.getElementById('navUserLabel');
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) logoutBtn.addEventListener('click', (e)=>{ e.preventDefault(); clearAuth(); if(navUser) navUser.textContent = 'Guest'; showToast('Logged out.','success'); try { window.location.href = '/'; } catch {} });
+
+            const token = getAuthToken();
+            if (!token) {
+                try { window.location.href = '/'; return; } catch {}
+            } else {
+                if(navUser) navUser.textContent = 'Admin';
+                loadDashboard().catch(err => {
+                    console.error("Initial dashboard load failed:", err);
+                    showToast(`Failed to load initial dashboard: ${err.message}`, "error");
+                     const dashSection = document.getElementById('dashboard-section');
+                     if (dashSection) dashSection.innerHTML = `<p class="text-danger text-center py-5">Could not load dashboard data. Please refresh the page.</p>`;
+                });
+            }
 
             // Load Chart.js script dynamically if not already loaded
             if (typeof Chart === 'undefined' && !document.querySelector('script[src*="chart.umd.min.js"]')) {
@@ -1692,6 +1903,55 @@
                       new bootstrap.Tooltip(tooltipTriggerEl);
                   });
              } catch(e) { console.warn("Error initializing tooltips:", e); }
+
+            // Navbar shadow on scroll
+            const nav = document.querySelector('.navbar');
+            const onScroll = () => {
+                if (!nav) return;
+                if (window.scrollY > 4) nav.classList.add('scrolled'); else nav.classList.remove('scrolled');
+            };
+            onScroll();
+            window.addEventListener('scroll', onScroll, { passive: true });
+
+            // Sidebar off-canvas toggle (mobile)
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            if (sidebar && sidebarToggle) {
+                sidebarToggle.addEventListener('click', () => {
+                    sidebar.classList.toggle('open');
+                });
+                // Close sidebar when clicking outside (mobile)
+                document.addEventListener('click', (e) => {
+                    if (window.innerWidth >= 992) return; // only mobile
+                    if (!sidebar.classList.contains('open')) return;
+                    const withinSidebar = sidebar.contains(e.target);
+                    const isToggle = sidebarToggle.contains(e.target);
+                    if (!withinSidebar && !isToggle) sidebar.classList.remove('open');
+                });
+            }
+
+            // Real-time validation for all relevant fields
+            const attachValidation = (el) => {
+                if (!el) return;
+                const validate = () => {
+                    // Empty fields: no state until user enters something
+                    const val = (el.value || '').trim();
+                    if (val === '') { el.classList.remove('is-valid', 'is-invalid'); return; }
+                    if (!el.checkValidity()) { el.classList.add('is-invalid'); el.classList.remove('is-valid'); }
+                    else { el.classList.add('is-valid'); el.classList.remove('is-invalid'); }
+                };
+                el.addEventListener('input', validate);
+                el.addEventListener('blur', validate);
+                if (el.tagName === 'SELECT') el.addEventListener('change', validate);
+            };
+            document.querySelectorAll('#productForm input, #productForm textarea, #productForm select,\
+                                       #supplierForm input, #supplierForm textarea, #supplierForm select,\
+                                       #customerForm input, #customerForm textarea, #customerForm select,\
+                                       #saleForm input, #saleForm select,\
+                                       #purchaseForm input, #purchaseForm select')
+                    .forEach(attachValidation);
+            // Login handlers removed (using standalone login page)
+
         });
 
     </script>

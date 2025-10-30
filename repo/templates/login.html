@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Inventory — Inventory Management</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root { 
+            --primary-color: #5e50f9; 
+            --primary-rgb: 94,80,249;
+            --light-gray: #f7f7fb;
+            --text-dark: #111827;
+            --text-light: #6b7280;
+        }
+
+        /* 1. Global & Typography */
+        body { 
+            font-family: 'Inter', sans-serif;
+            background:
+                radial-gradient(1200px 600px at -10% -10%, rgba(var(--primary-rgb),0.14), transparent 60%),
+                radial-gradient(900px 500px at 110% 0%, rgba(130,95,255,0.12), transparent 55%),
+                var(--light-gray);
+            color: var(--text-dark);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .lead {
+            font-weight: 400;
+        }
+
+        /* 2. Navbar */
+        .navbar-brand { 
+            font-weight: 700; 
+            color: var(--primary-color) !important; 
+        }
+        .navbar.glass {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: saturate(180%) blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+        .navbar .nav-link {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+        .navbar .nav-link:hover {
+            color: var(--primary-color);
+        }
+
+        /* 3. Hero Section */
+        .hero { 
+            padding: 96px 0 64px; 
+        }
+        .hero-title { 
+            font-weight: 800; 
+            letter-spacing: -1.2px; 
+            color: var(--text-dark);
+            font-size: calc(1.475rem + 2.7vw); /* Responsive large font */
+            line-height: 1.2;
+        }
+        @media (min-width: 1200px) {
+            .hero-title { font-size: 3.75rem; }
+        }
+        .hero-sub { 
+            color: var(--text-light);
+            font-size: 1.2rem;
+        }
+        .hero .btn-lg {
+            padding: 14px 32px;
+            font-weight: 500;
+            border-radius: 0.5rem;
+        }
+        .hero-image {
+            border-radius: 0.75rem;
+            /* A more modern, layered shadow */
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 10px 15px -5px rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.05);
+            transform: translateZ(0);
+            transition: transform .35s ease, box-shadow .35s ease;
+        }
+        .hero-image:hover { 
+            transform: translateY(-6px);
+            box-shadow: 0 30px 60px -15px rgba(0,0,0,0.2), 0 12px 18px -6px rgba(0,0,0,0.12);
+        }
+
+        /* 4. Section Styling */
+        .section {
+            padding: 80px 0;
+        }
+        .section-header { 
+            margin-bottom: 48px; 
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .section-header h2 { 
+            font-weight: 700; 
+            letter-spacing: -0.5px;
+            color: var(--text-dark);
+        }
+        .section-header p { 
+            color: var(--text-light); 
+            font-size: 1.1rem; 
+        }
+        
+        /* 5. Features Section */
+        #features {
+            background-color: #ffffff;
+            border-top: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .feature-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 24px;
+            transition: all 0.3s ease;
+            height: 100%;
+            will-change: transform;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.07);
+        }
+        .feature-icon { 
+            width: 48px; height: 48px; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center; 
+            border-radius: 10px; 
+            background: rgba(var(--primary-rgb),0.1); 
+            color: var(--primary-color);
+            font-size: 1.5rem;
+        }
+        .feature-card h5 { 
+            font-weight: 700; 
+            margin-top: 16px; 
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+        .feature-card p { 
+            color: var(--text-light); 
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* 6. Why Us Section */
+        #why img {
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        #why .text-primary {
+            color: var(--primary-color) !important;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+        #why h2 {
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        /* 7. Final CTA Section */
+        #contact {
+            background: linear-gradient(45deg, var(--primary-color), #825fff);
+            color: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 20px 40px -20px rgba(var(--primary-rgb), .55);
+        }
+        #contact h2 {
+            font-weight: 700;
+        }
+        #contact .btn-light {
+            font-weight: 700;
+            color: var(--primary-color);
+            padding: 12px 28px;
+        }
+
+        /* 8. Footer */
+        footer { 
+            padding: 32px 0;
+            color: var(--text-light); 
+            font-size: 0.9rem;
+        }
+        .footer-brand {
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+        .footer-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 1.25rem;
+            margin-left: 16px;
+        }
+        .footer-links a:hover { 
+            color: var(--primary-color); 
+        }
+
+        /* 9. Modal */
+        .modal-header, .modal-footer {
+            border: none;
+            padding: 1rem 1.5rem;
+        }
+        .modal-content {
+            border-radius: 0.75rem;
+            border: none;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+        }
+        .modal-brand-icon {
+            width: 40px; height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(var(--primary-rgb),0.1);
+            color: var(--primary-color);
+            font-size: 1.25rem;
+            margin: 0 auto 16px;
+        }
+        .modal-body {
+            padding: 1.5rem;
+        }
+        .modal-footer .btn {
+            padding: 10px 20px;
+        }
+        .modal-footer .btn-primary {
+            width: 100%;
+        }
+
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg glass sticky-top">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#"><i class="bi bi-box-seam me-2"></i> Smart Inventory</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navContent">
+                <ul class="navbar-nav me-auto ms-lg-4">
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#why">Why Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                </ul>
+                <div class="d-flex gap-2">
+                    <a id="openAppBtn" href="/app" class="btn btn-outline-primary d-none">Open App</a>
+                    <button id="loginCta" class="btn btn-primary"><i class="bi bi-box-arrow-in-right me-1"></i> Login</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <h1 class="display-4 hero-title mb-3">Fast, modern inventory management</h1>
+                    <p class="lead hero-sub mb-4">Track stock in real-time, prevent shortages, and get sales insights—all in one beautiful dashboard.</p>
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+                        <button class="btn btn-primary btn-lg d-inline-flex align-items-center justify-content-center" id="getStartedBtn">
+                            Get Started Free <i class="bi bi-arrow-right-short ms-1"></i>
+                        </button>
+                        <a href="#features" class="btn btn-outline-primary btn-lg d-inline-flex align-items-center justify-content-center">
+                            <i class="bi bi-check-circle me-2"></i> Explore features
+                        </a>
+                    </div>
+                    <div class="mt-4 text-muted small">No setup required. Works in your browser.</div>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://images.unsplash.com/photo-1532619187608-e5375cab36aa?q=80&w=1200&auto=format&fit=crop" class="img-fluid hero-image" alt="Inventory dashboard preview" loading="lazy" />
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="section">
+        <div class="container">
+            <div class="section-header text-center">
+                <h2>Everything you need</h2>
+                <p>One platform to manage your stock, suppliers, and sales without the clutter.</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon mb-3"><i class="bi bi-graph-up"></i></div>
+                        <h5>Live Dashboard</h5>
+                        <p class="text-muted mb-0">Track sales, stock levels, and low inventory at a glance.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon mb-3"><i class="bi bi-box-seam"></i></div>
+                        <h5>Inventory Control</h5>
+                        <p class="text-muted mb-0">Smart reorder points to prevent stockouts and overstocking.</p>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-card">
+                            <div class="feature-icon mb-3"><i class="bi bi-people"></i></div>
+                            <h5>CRM Light</h5>
+                            <p class="text-muted mb-0">Manage all your customers and suppliers in one place.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 col-lg-3">
+                    <div class="feature-card">
+                        <div class="feature-icon mb-3"><i class="bi bi-shield-check"></i></div>
+                        <h5>Secure Access</h5>
+                        <p class="text-muted mb-0">Simple admin login with role-based permissions and protected APIs.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="why" class="section">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-6">
+                    <img src="https://images.unsplash.com/photo-1556761175-129418cb2dfe?q=80&w=1200&auto=format&fit=crop" class="img-fluid" alt="Team working on dashboard" loading="lazy">
+                </div>
+                <div class="col-lg-6">
+                    <p class="text-primary">BUILT FOR GROWTH</p>
+                    <h2 class="display-6 mb-3">Stop guessing, start controlling</h2>
+                    <p class="lead hero-sub mb-4">Other inventory tools are either too simple (spreadsheets) or too complex (full ERPs). Smart Inventory gives you just the features you need to grow your business, with zero setup time.</p>
+                    <ul class="list-unstyled d-grid gap-3">
+                        <li class="d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill text-success me-2 fs-5"></i>
+                            <span>Get instant low-stock alerts.</span>
+                        </li>
+                        <li class="d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill text-success me-2 fs-5"></i>
+                            <span>Track items by location, SKU, or batch.</span>
+                        </li>
+                        <li class="d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill text-success me-2 fs-5"></i>
+                            <span>Access your data from anywhere, on any device.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div id="contact" class="p-5 text-center">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        <h2 class="display-6">Ready to streamline your inventory?</h2>
+                        <p class="lead my-4">Start your free trial today. No credit card required.</p>
+                        <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            Get Started Now <i class="bi bi-box-arrow-in-right ms-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <footer class="py-4">
+        <div class="container">
+            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3">
+                <div class="footer-brand">
+                    <i class="bi bi-box-seam me-1"></i> Smart Inventory
+                </div>
+                <div class="small">© <span id="year"></span> All rights reserved.</div>
+                <div class="footer-links">
+                    <a href="#" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" aria-label="GitHub"><i class="bi bi-github"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Sign in</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="modal-brand-icon">
+                        <i class="bi bi-box-seam"></i>
+                    </div>
+                    <form id="loginForm" novalidate>
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="username" placeholder="Username" required value="admin">
+                            <label for="username">Username</label>
+                            <div class="invalid-feedback">Username required.</div>
+                        </div>
+                        <div class="form-floating mb-1">
+                            <input type="password" class="form-control" id="password" placeholder="Password" required>
+                            <label for="password">Password</label>
+                            <div class="invalid-feedback">Password required.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer d-grid">
+                    <button type="button" id="loginBtn" class="btn btn-primary btn-lg">Sign in</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 2100;">
+        <div id="toastContainer"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API_BASE_URL = '';
+        const API_URL = API_BASE_URL + '/api';
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const el = document.createElement('div');
+            const color = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : type === 'warning' ? 'bg-warning text-dark' : 'bg-primary';
+            el.className = `toast align-items-center text-white ${color} border-0`;
+            el.setAttribute('role', 'alert'); el.setAttribute('aria-live', 'assertive'); el.setAttribute('aria-atomic', 'true');
+            el.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>`;
+            container.appendChild(el);
+            try { const t = new bootstrap.Toast(el, { delay: 3000 }); t.show(); el.addEventListener('hidden.bs.toast', () => el.remove(), { once: true }); } catch { el.remove(); }
+        }
+        function setAuth(token){ try { localStorage.setItem('authToken', token||''); } catch {}
+        }
+        function getAuth(){ try { return localStorage.getItem('authToken') || ''; } catch { return ''; } }
+
+        // If already logged in, show Open App button and optionally redirect
+        (function(){
+            const token = getAuth();
+            const openBtn = document.getElementById('openAppBtn');
+            const loginBtnCta = document.getElementById('loginCta');
+            if (token) { 
+                if (openBtn) openBtn.classList.remove('d-none'); 
+                if (loginBtnCta) loginBtnCta.classList.add('d-none'); // Also hide main login button
+            }
+        })();
+
+        async function apiFetch(url, options = {}){
+            const defaultHeaders = { 'Content-Type': 'application/json', 'Accept': 'application/json', ...options.headers };
+            const fetchOptions = { ...options, headers: defaultHeaders };
+            if (fetchOptions.body && typeof fetchOptions.body !== 'string' && !(['GET','HEAD'].includes((fetchOptions.method||'GET').toUpperCase()))) {
+                fetchOptions.body = JSON.stringify(fetchOptions.body);
+            } else if (['GET','HEAD'].includes((fetchOptions.method||'GET').toUpperCase())) {
+                delete fetchOptions.body;
+            }
+            const res = await fetch(url, fetchOptions);
+            const isJson = (res.headers.get('content-type')||'').includes('application/json');
+            const body = isJson ? await res.json() : await res.text();
+            if (!res.ok) throw new Error((isJson && body && body.error) ? body.error : (typeof body === 'string' && body.trim()) || res.statusText || 'Login failed');
+            return body;
+        }
+
+        // CTA open modal
+        // Note: I left getStartedBtn, but the new CTA in #contact section also opens the modal
+        document.getElementById('getStartedBtn')?.addEventListener('click', ()=>{
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('loginModal')).show();
+        });
+        document.getElementById('loginCta')?.addEventListener('click', ()=>{
+            bootstrap.Modal.getOrCreateInstance(document.getElementById('loginModal')).show();
+        });
+
+        // Login handler
+        const form = document.getElementById('loginForm');
+        const btn = document.getElementById('loginBtn');
+        const doLogin = async () => {
+            if (!form.checkValidity()) { form.reportValidity(); return; }
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const original = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Signing in...`;
+            try {
+                const res = await apiFetch(`${API_URL}/login`, { method: 'POST', body: { username, password } });
+                if (!res || !res.token) throw new Error('Invalid login response');
+                setAuth(res.token);
+                showToast('Signed in successfully.', 'success');
+                window.location.href = '/app';
+            } catch (err) {
+                showToast(err.message || 'Login failed', 'error');
+            } finally { btn.disabled = false; btn.innerHTML = original; }
+        };
+        btn?.addEventListener('click', doLogin);
+        form?.addEventListener('submit', (e)=>{ e.preventDefault(); doLogin(); });
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>

@@ -35,7 +35,9 @@ DB_CONFIG = {
     'password': os.getenv('DB_PASSWORD', 'postgres'),
     'dbname': os.getenv('DB_NAME', 'postgres'),
 }
-ADMIN_TOKEN = 'dev'
+ADMIN_TOKEN = os.getenv('ADMIN_TOKEN', 'dev')
+ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'admin')
+ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'admin')
 
 # Database Connection Helper
 def get_db_connection():
@@ -145,12 +147,40 @@ def _run_sql_script(conn, script_text: str) -> int:
     return statements_run
 
 
+# ==================== AUTH HELPERS ====================
+
+def _extract_bearer_token() -> Optional[str]:
+    auth_header = request.headers.get('Authorization', '')
+    if auth_header.startswith('Bearer '):
+        return auth_header.split(' ', 1)[1].strip()
+    return None
+
+
+@app.before_request
+def _protect_api_routes():
+    # Allow public endpoints
+    path = request.path or ''
+    if not path.startswith('/api'):
+        return
+    if path in ('/api/login', '/api/health') or path.startswith('/api/reports') and request.method == 'GET':
+        return
+    token = _extract_bearer_token()
+    if token != ADMIN_TOKEN:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+
 # ==================== ROUTES ====================
 
-# Home Dashboard
+# Login as root route
 @app.route('/')
+def login_page():
+    """Render login page"""
+    return render_template('login.html')
+
+# App dashboard
+@app.route('/app')
 def index():
-    """Render home dashboard"""
+    """Render main application"""
     return render_template('index.html')
 
 # Health check
@@ -164,6 +194,18 @@ def health():
         return jsonify({'status': 'ok', 'db': 'up'}), 200
     except Exception:
         return jsonify({'status': 'unhealthy'}), 500
+
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    try:
+        data = request.get_json(silent=True) or {}
+        username = str(data.get('username', '')).strip()
+        password = str(data.get('password', ''))
+        if username != ADMIN_USERNAME or password != ADMIN_PASSWORD:
+            return jsonify({'error': 'Invalid credentials'}), 401
+        return jsonify({'token': ADMIN_TOKEN, 'user': {'username': ADMIN_USERNAME}}), 200
+    except Exception:
+        return jsonify({'error': 'Login failed'}), 400
 
 # Admin: Initialize PostgreSQL schema (use with caution). Protect with ADMIN_TOKEN.
 @app.route('/admin/init-db', methods=['POST'])
@@ -1034,11 +1076,11 @@ def apply_security_headers(response):
     response.headers['Referrer-Policy'] = 'no-referrer'
     # Keep CSP relaxed due to external CDNs and inline scripts in template; tighten if you self-host assets
     response.headers['Content-Security-Policy'] = (
-        "default-src 'self' https://cdnjs.cloudflare.com; "
-        "img-src 'self' data: https://cdnjs.cloudflare.com; "
-        "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
-        "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; "
-        "font-src 'self' https://cdnjs.cloudflare.com"
+        "default-src 'self' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
+        "img-src 'self' data: https://cdnjs.cloudflare.com https://images.unsplash.com https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://cdn.jsdelivr.net; "
+        "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; "
+        "font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com https://cdn.jsdelivr.net"
     )
     return response
 
