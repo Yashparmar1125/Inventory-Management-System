@@ -502,13 +502,13 @@
                             <i class="bi bi-moon-fill"></i>
                         </button>
                     </li>
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown d-none" id="userMenu">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle me-1"></i> <span id="navUserLabel">Guest</span>
+                            <i class="bi bi-person-circle me-1"></i> <span id="navUserLabel"></span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-person-fill me-2"></i> Profile</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i> Settings</a></li>
+                            <li><a class="dropdown-item" href="#" id="openProfile"><i class="bi bi-person-fill me-2"></i> Profile</a></li>
+                            <li><a class="dropdown-item" href="#" id="openSettings"><i class="bi bi-gear me-2"></i> Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
                         </ul>
@@ -801,26 +801,38 @@
                         <h2>Reports & Analytics</h2>
                     </div>
                     
-                    <div class="row mb-4">
-                        <div class="col-md-4">
-                            <button class="btn btn-outline-primary w-100 mb-2" onclick="loadReport('TopProducts')">
-                                <i class="bi bi-trophy me-1"></i> Top Selling Products
-                            </button>
+                    <div class="row gy-2 gx-2 mb-3 align-items-end">
+                        <div class="col-12 col-md-6 col-lg-4">
+                            <div class="btn-group w-100" role="group" aria-label="Report Switcher">
+                                <button class="btn btn-outline-primary" onclick="loadReport('TopProducts')"><i class="bi bi-trophy me-1"></i>Top Products</button>
+                                <button class="btn btn-outline-primary" onclick="loadReport('LowStock')"><i class="bi bi-exclamation-triangle me-1"></i>Low Stock</button>
+                                <button class="btn btn-outline-primary" onclick="loadReport('SalesSummary')"><i class="bi bi-graph-up me-1"></i>Sales</button>
+                            </div>
                         </div>
-                        <div class="col-md-4">
-                            <button class="btn btn-outline-primary w-100 mb-2" onclick="loadReport('LowStock')">
-                                <i class="bi bi-exclamation-triangle me-1"></i> Low Stock Report
-                            </button>
+                        <div class="col-6 col-md-3 col-lg-2">
+                            <label class="form-label mb-1 small">Chart</label>
+                            <select id="reportChartType" class="form-select form-select-sm">
+                                <option value="bar">Bar</option>
+                                <option value="line">Line</option>
+                                <option value="pie">Pie</option>
+                            </select>
                         </div>
-                        <div class="col-md-4">
-                            <button class="btn btn-outline-primary w-100 mb-2" onclick="loadReport('SalesSummary')">
-                                <i class="bi bi-graph-up me-1"></i> Sales Summary
-                            </button>
+                        <div class="col-6 col-md-3 col-lg-2 d-none" id="reportFromWrap">
+                            <label class="form-label mb-1 small">From</label>
+                            <input type="date" id="reportFrom" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2 d-none" id="reportToWrap">
+                            <label class="form-label mb-1 small">To</label>
+                            <input type="date" id="reportTo" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-6 col-md-3 col-lg-2 text-md-end">
+                            <button id="exportReportBtn" class="btn btn-outline-secondary w-100"><i class="bi bi-download me-1"></i>Export CSV</button>
                         </div>
                     </div>
 
                     <div class="table-container">
                         <h5 id="reportTitle" class="mb-3">Select a report to view</h5>
+                        <div id="reportSummary" class="row g-3 mb-3"></div>
                         <div id="reportContent">
                              <p class="text-muted">Report data and chart will appear here.</p>
                         </div>
@@ -832,6 +844,90 @@
     
     <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 2100;">
         <div id="toastContainer"></div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="profileModalLabel">Your Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="profileForm">
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="profileUsername" placeholder="Username" readonly>
+                                    <label for="profileUsername">Username</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="email" class="form-control" id="profileEmail" placeholder="Email">
+                                    <label for="profileEmail">Email</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="profileFullName" placeholder="Full name">
+                            <label for="profileFullName">Full name</label>
+                        </div>
+                        <div class="form-floating">
+                            <textarea class="form-control" id="profileBio" placeholder="Bio" style="height: 100px"></textarea>
+                            <label for="profileBio">Bio</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveProfileBtn">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="settingsForm">
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Default Products Page Size</label>
+                                <select id="setPageSize" class="form-select">
+                                    <option value="5">5</option>
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Default Report Chart</label>
+                                <select id="setChartType" class="form-select">
+                                    <option value="bar">Bar</option>
+                                    <option value="line">Line</option>
+                                    <option value="pie">Pie</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="setDarkMode">
+                            <label class="form-check-label" for="setDarkMode">Use Dark Mode</label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveSettingsBtn">Save</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     
@@ -1125,7 +1221,8 @@
 
         function getAuthToken(){ try { return localStorage.getItem('authToken') || ''; } catch { return ''; } }
         function setAuth(token){ try { localStorage.setItem('authToken', token||''); } catch {} }
-        function clearAuth(){ try { localStorage.removeItem('authToken'); } catch {} }
+        function clearAuth(){ try { localStorage.removeItem('authToken'); localStorage.removeItem('authUser'); } catch {} }
+        function getAuthUser(){ try { return localStorage.getItem('authUser') || 'Admin'; } catch { return 'Admin'; } }
 
         async function apiFetch(url, options = {}, { useOverlay = false } = {}) {
             // No global overlay used anymore
@@ -1489,7 +1586,11 @@
             const search = document.getElementById('productSearch');
             const pageSizeSel = document.getElementById('productPageSize');
             if (search) search.addEventListener('input', filterProducts);
-            if (pageSizeSel) pageSizeSel.addEventListener('change', () => { productsPage = 1; renderProducts(); });
+            if (pageSizeSel) {
+                // Load preferred page size from settings
+                try { const s = JSON.parse(localStorage.getItem('appSettings')||'{}'); if (s.pageSize) pageSizeSel.value = String(s.pageSize); } catch {}
+                pageSizeSel.addEventListener('change', () => { productsPage = 1; renderProducts(); });
+            }
             productControlsWired = true;
         }
 
@@ -1705,7 +1806,7 @@
          }
         async function editSupplier(id) { /* ... */ try { showToast("Loading...", "info"); const s=await apiFetch(`${API_URL}/suppliers/${id}`); openSupplierModal(s); } catch(e){showToast(`Load failed: ${e.message}`,'error');} }
         async function saveSupplier() { /* ... */
-             const f=document.getElementById('supplierForm'); if(!f.checkValidity()){f.reportValidity();showToast('Name required.','warning');return;} const id=document.getElementById('supplierId').value; const d={SupplierName:document.getElementById('supplierName').value.trim(),ContactPerson:document.getElementById('supplierContact').value.trim(),Phone:document.getElementById('supplierPhone').value.trim(),Email:document.getElementById('supplierEmail').value.trim(),Address:document.getElementById('supplierAddress').value.trim()}; const u=id?`${API_URL}/suppliers/${id}`:`${API_URL}/suppliers`; const m=id?'PUT':'POST'; const b=document.querySelector('#supplierModal .btn-primary'); const o=b.innerHTML; b.disabled=true; b.innerHTML=`<span class="spinner-border spinner-border-sm"></span> Saving...`; try {await apiFetch(u,{method:m,body:d}); bootstrap.Modal.getInstance(document.getElementById('supplierModal')).hide(); showToast(`Supplier ${id?'updated':'added'}!`,'success'); await loadSuppliers();} catch(e){showToast(`Save failed: ${e.message}`,'error');} finally {b.disabled=false; b.innerHTML=o;}
+             const f=document.getElementById('supplierForm'); if(!f.checkValidity()){f.reportValidity();showToast('Name required.','warning');return;} const id=document.getElementById('supplierId').value; const phone=`${document.getElementById('supplierPhoneCode').value}${(document.getElementById('supplierPhone').value||'').replace(/\D/g,'')}`; const d={SupplierName:document.getElementById('supplierName').value.trim(),ContactPerson:document.getElementById('supplierContact').value.trim(),Phone:phone,Email:document.getElementById('supplierEmail').value.trim(),Address:document.getElementById('supplierAddress').value.trim()}; const u=id?`${API_URL}/suppliers/${id}`:`${API_URL}/suppliers`; const m=id?'PUT':'POST'; const b=document.querySelector('#supplierModal .btn-primary'); const o=b.innerHTML; b.disabled=true; b.innerHTML=`<span class="spinner-border spinner-border-sm"></span> Saving...`; try {await apiFetch(u,{method:m,body:d}); bootstrap.Modal.getInstance(document.getElementById('supplierModal')).hide(); showToast(`Supplier ${id?'updated':'added'}!`,'success'); await loadSuppliers();} catch(e){showToast(`Save failed: ${e.message}`,'error');} finally {b.disabled=false; b.innerHTML=o;}
          }
         async function deleteSupplier(id) { /* ... */ if(!confirm(`Delete supplier ${id}?`))return; try {showToast("Deleting...", "info"); await apiFetch(`${API_URL}/suppliers/${id}`,{method:'DELETE'}); showToast('Deleted!','success'); await loadSuppliers(); if(document.getElementById('products-section').classList.contains('active')) await loadProducts();} catch(e){showToast(`Delete failed: ${e.message}`,'error');}}
 
@@ -1744,7 +1845,7 @@
         function openCustomerModal(customer = null) { /* ... */ const m=document.getElementById('customerModal'), t=document.getElementById('customerModalTitle'), f=document.getElementById('customerForm'); if(!m||!t||!f)return; f.reset(); document.getElementById('customerId').value=''; const setPhone=(full,codeId,inputId)=>{const codeEl=document.getElementById(codeId), inputEl=document.getElementById(inputId); if(!codeEl||!inputEl)return; const value=String(full||''); const options=[...codeEl.options].map(o=>o.value).sort((a,b)=>b.length-a.length); let chosen=codeEl.options[0].value, rest=value; if(value.startsWith('+')){ const match=options.find(v=>value.startsWith(v)); if(match){chosen=match; rest=value.slice(match.length);} } codeEl.value=chosen; inputEl.value=(rest||'').replace(/\D/g,'');}; if(customer){t.textContent='Edit';document.getElementById('customerId').value=customer.CustomerID;document.getElementById('customerName').value=customer.CustomerName; setPhone(customer.Phone,'customerPhoneCode','customerPhone'); document.getElementById('customerEmail').value=customer.Email||'';document.getElementById('customerAddress').value=customer.Address||'';}else{t.textContent='Add';} bootstrap.Modal.getOrCreateInstance(m).show();}
         async function editCustomer(id) { /* ... */ try {showToast("Loading...", "info"); const c=await apiFetch(`${API_URL}/customers/${id}`); openCustomerModal(c);} catch(e){showToast(`Load failed: ${e.message}`,'error');}}
         async function saveCustomer() { /* ... */
-             const f=document.getElementById('customerForm'); if(!f.checkValidity()){f.reportValidity();showToast('Name required.','warning');return;} const id=document.getElementById('customerId').value; const d={CustomerName:document.getElementById('customerName').value.trim(),Phone:document.getElementById('customerPhone').value.trim(),Email:document.getElementById('customerEmail').value.trim(),Address:document.getElementById('customerAddress').value.trim()}; const u=id?`${API_URL}/customers/${id}`:`${API_URL}/customers`; const m=id?'PUT':'POST'; const b=document.querySelector('#customerModal .btn-primary'); const o=b.innerHTML; b.disabled=true; b.innerHTML=`<span class="spinner-border spinner-border-sm"></span> Saving...`; try {await apiFetch(u,{method:m,body:d}); bootstrap.Modal.getInstance(document.getElementById('customerModal')).hide(); showToast(`Customer ${id?'updated':'added'}!`,'success'); await loadCustomers(); if(document.getElementById('dashboard-section').classList.contains('active')) await loadDashboard();} catch(e){showToast(`Save failed: ${e.message}`,'error');} finally {b.disabled=false; b.innerHTML=o;}
+             const f=document.getElementById('customerForm'); if(!f.checkValidity()){f.reportValidity();showToast('Name required.','warning');return;} const id=document.getElementById('customerId').value; const phone=`${document.getElementById('customerPhoneCode').value}${(document.getElementById('customerPhone').value||'').replace(/\D/g,'')}`; const d={CustomerName:document.getElementById('customerName').value.trim(),Phone:phone,Email:document.getElementById('customerEmail').value.trim(),Address:document.getElementById('customerAddress').value.trim()}; const u=id?`${API_URL}/customers/${id}`:`${API_URL}/customers`; const m=id?'PUT':'POST'; const b=document.querySelector('#customerModal .btn-primary'); const o=b.innerHTML; b.disabled=true; b.innerHTML=`<span class="spinner-border spinner-border-sm"></span> Saving...`; try {await apiFetch(u,{method:m,body:d}); bootstrap.Modal.getInstance(document.getElementById('customerModal')).hide(); showToast(`Customer ${id?'updated':'added'}!`,'success'); await loadCustomers(); if(document.getElementById('dashboard-section').classList.contains('active')) await loadDashboard();} catch(e){showToast(`Save failed: ${e.message}`,'error');} finally {b.disabled=false; b.innerHTML=o;}
          }
         async function deleteCustomer(id) { /* ... */ if(!confirm(`Delete customer ${id}?`))return; try {showToast("Deleting...", "info"); await apiFetch(`${API_URL}/customers/${id}`,{method:'DELETE'}); showToast('Deleted!','success'); await loadCustomers(); if(document.getElementById('dashboard-section').classList.contains('active')) await loadDashboard();} catch(e){showToast(`Delete failed: ${e.message}`,'error');}}
 
@@ -1839,6 +1940,12 @@
         async function loadReport(reportType) {
             const contentDiv = document.getElementById('reportContent');
             const titleEl = document.getElementById('reportTitle');
+            const summaryRow = document.getElementById('reportSummary');
+            const chartTypeSel = document.getElementById('reportChartType');
+            const fromWrap = document.getElementById('reportFromWrap');
+            const toWrap = document.getElementById('reportToWrap');
+            const fromEl = document.getElementById('reportFrom');
+            const toEl = document.getElementById('reportTo');
             if(!contentDiv || !titleEl) return;
 
             contentDiv.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>`;
@@ -1859,11 +1966,44 @@
                 
                 const data = await apiFetch(url); // Propagates error
                 titleEl.textContent = title;
+
+                // Toggle date inputs for SalesSummary
+                const showDate = reportType === 'SalesSummary';
+                if (fromWrap) fromWrap.classList.toggle('d-none', !showDate);
+                if (toWrap) toWrap.classList.toggle('d-none', !showDate);
                 
                 if (!Array.isArray(data) || data.length === 0) {
                      contentDiv.innerHTML = '<p class="text-muted text-center py-4">No data available for this report.</p>';
+                     if (summaryRow) summaryRow.innerHTML = '';
                      if(reportChart) { reportChart.destroy(); reportChart = null; } return;
                  }
+
+                // Optional date filter for SalesSummary
+                let filtered = data.slice();
+                if (showDate && (fromEl?.value || toEl?.value)) {
+                    const fromTime = fromEl?.value ? new Date(fromEl.value).getTime() : -Infinity;
+                    const toTime = toEl?.value ? new Date(toEl.value).getTime() + 24*60*60*1000 - 1 : Infinity;
+                    filtered = data.filter(d => { const t=new Date(d.SaleDate).getTime(); return t>=fromTime && t<=toTime; });
+                }
+
+                // Summary cards
+                const card = (t,v,cls='primary') => (`<div class="col-6 col-lg-3"><div class="card border-0" style="background-color: var(--bs-${cls}-bg-subtle);"><div class="card-body"><div class="small text-${cls}-emphasis">${t}</div><div class="h5 fw-bold text-${cls}-emphasis">${v}</div></div></div></div>`);
+                let summaryHTML = '';
+                if (reportType==='TopProducts'){
+                    const totalUnits = filtered.reduce((s,r)=>s+(Number(r.TotalSold)||0),0);
+                    const revenue = filtered.reduce((s,r)=>s+(Number(r.Revenue)||0),0);
+                    summaryHTML = card('Products', filtered.length, 'primary') + card('Units Sold', totalUnits.toLocaleString(), 'success') + card('Revenue', formatCurrency(revenue), 'info');
+                } else if (reportType==='LowStock'){
+                    const qtyNeeded = filtered.reduce((s,r)=>s+(Number(r.QuantityNeeded)||0),0);
+                    const lowest = Math.min(...filtered.map(r=>Number(r.Quantity)||0));
+                    summaryHTML = card('Items Low', filtered.length, 'warning') + card('Qty Needed', qtyNeeded.toLocaleString(), 'danger') + card('Lowest Stock', (isFinite(lowest)?lowest:0).toLocaleString(), 'dark');
+                } else if (reportType==='SalesSummary'){
+                    const total = filtered.reduce((s,r)=>s+(Number(r.TotalAmount)||0),0);
+                    const days = new Set(filtered.map(r=>new Date(r.SaleDate).toDateString())).size || 1;
+                    const avg = total/days;
+                    summaryHTML = card('Days', days, 'primary') + card('Total Sales', formatCurrency(total), 'success') + card('Avg / Day', formatCurrency(avg), 'info');
+                }
+                if (summaryRow) summaryRow.innerHTML = summaryHTML;
                 
                 contentDiv.innerHTML = `
                     <div class="row g-3">
@@ -1877,9 +2017,9 @@
                          </div>
                     </div>`;
 
-                // Build table
-                let tableHTML = '<thead><tr>'; const headers = Object.keys(data[0]); headers.forEach(key => tableHTML += `<th>${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</th>`); tableHTML += '</tr></thead><tbody>';
-                data.forEach(row => { tableHTML += '<tr>'; headers.forEach(key => { let v=row[key], c=v??'N/A'; if(key.match(/amount|price|cost|revenue|sales/i)&&typeof v==='number')c=formatCurrency(v); else if(key.match(/date/i))try{c=new Date(v).toLocaleDateString();}catch(e){} else if(key==='Quantity'&&reportType==='LowStock')c=`<span class="badge bg-danger">${v}</span>`; tableHTML+=`<td>${c}</td>`; }); tableHTML+='</tr>'; }); tableHTML+='</tbody>';
+                // Build table from filtered
+                let tableHTML = '<thead><tr>'; const headers = Object.keys(filtered[0]); headers.forEach(key => tableHTML += `<th>${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</th>`); tableHTML += '</tr></thead><tbody>';
+                filtered.forEach(row => { tableHTML += '<tr>'; headers.forEach(key => { let v=row[key], c=v??'N/A'; if(key.match(/amount|price|cost|revenue|sales/i)&&typeof v==='number')c=formatCurrency(v); else if(key.match(/date/i))try{c=new Date(v).toLocaleDateString();}catch(e){} else if(key==='Quantity'&&reportType==='LowStock')c=`<span class="badge bg-danger">${v}</span>`; tableHTML+=`<td>${c}</td>`; }); tableHTML+='</tr>'; }); tableHTML+='</tbody>';
                 const reportTableEl = document.getElementById('reportTable'); if(reportTableEl) reportTableEl.innerHTML = tableHTML;
 
                 // Chart rendering
@@ -1887,11 +2027,27 @@
                 if (ctx) {
                      const isDark = document.body.getAttribute('data-theme') === 'dark';
                      const pC = isDark?'rgba(138,180,248,0.75)':'rgba(94,80,249,0.75)', sC=isDark?'rgba(45,212,191,0.65)':'rgba(6,214,160,0.65)', dC=isDark?'rgba(248,113,113,0.75)':'rgba(239,71,111,0.75)';
+                     let chosenType = chartTypeSel?.value || chartType;
                      let chartData = { labels: [], datasets: [] };
-                     if(reportType==='TopProducts'){chartData.labels=data.map(d=>d.ProductName).slice(0,10); chartData.datasets=[{label:'Units Sold',data:data.map(d=>d.TotalSold).slice(0,10),backgroundColor:pC},{label:'Revenue (₹)',data:data.map(d=>d.Revenue).slice(0,10),backgroundColor:sC}];}
-                     else if(reportType==='LowStock'){chartData.labels=data.map(d=>d.ProductName).slice(0,15); chartData.datasets=[{label:'Quantity Needed',data:data.map(d=>d.QuantityNeeded).slice(0,15),backgroundColor:dC}];}
-                     else if(reportType==='SalesSummary'){const sD=data.slice().sort((a,b)=>new Date(a.SaleDate)-new Date(b.SaleDate)); chartData.labels=sD.map(d=>new Date(d.SaleDate).toLocaleDateString()); chartData.datasets=[{label:'Sales (₹)',data:sD.map(d=>d.TotalAmount),borderColor:pC,backgroundColor:pC.replace('0.75','0.2'),tension:.35,fill:true}];}
-                     renderChart(ctx, chartType, chartData, chartOptions);
+                     if(reportType==='TopProducts'){
+                        const arr=filtered.slice(0,10);
+                        chartData.labels=arr.map(d=>d.ProductName);
+                        chartData.datasets=[{label:'Units Sold',data:arr.map(d=>d.TotalSold),backgroundColor:pC},{label:'Revenue (₹)',data:arr.map(d=>d.Revenue),backgroundColor:sC}];
+                        if(chosenType==='pie'){ chartData={labels:arr.map(d=>d.ProductName), datasets:[{data:arr.map(d=>d.TotalSold), backgroundColor:arr.map((_,i)=> i%2? pC : sC)}]}; }
+                     }
+                     else if(reportType==='LowStock'){
+                        const arr=filtered.slice(0,15);
+                        chartData.labels=arr.map(d=>d.ProductName);
+                        chartData.datasets=[{label:'Quantity Needed',data:arr.map(d=>d.QuantityNeeded),backgroundColor:dC}];
+                        if(chosenType==='pie'){ chartData={labels:arr.map(d=>d.ProductName), datasets:[{data:arr.map(d=>d.QuantityNeeded), backgroundColor:arr.map((_,i)=> i%2? dC : pC)}]}; }
+                     }
+                     else if(reportType==='SalesSummary'){
+                        const sD=filtered.slice().sort((a,b)=>new Date(a.SaleDate)-new Date(b.SaleDate));
+                        chartData.labels=sD.map(d=>new Date(d.SaleDate).toLocaleDateString());
+                        chartData.datasets=[{label:'Sales (₹)',data:sD.map(d=>d.TotalAmount),borderColor:pC,backgroundColor:pC.replace('0.75','0.2'),tension:.35,fill:true}];
+                        if(chosenType==='pie'){ chartData={labels:['Total'], datasets:[{data:[sD.reduce((s,r)=>s+(Number(r.TotalAmount)||0),0)], backgroundColor:[pC]}]}; }
+                     }
+                     renderChart(ctx, chosenType, chartData, chartOptions);
                 } else console.error("Canvas element for chart not found.");
 
             } catch (error) {
@@ -1902,20 +2058,108 @@
             }
         }
 
+        function exportTableToCSV(filename = 'report.csv'){
+            const table = document.getElementById('reportTable'); if(!table) return;
+            const rows = Array.from(table.querySelectorAll('tr'));
+            const csv = rows.map(tr => Array.from(tr.querySelectorAll('th,td')).map(td => '"'+ String(td.textContent).replace(/"/g,'""') +'"').join(',')).join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; link.click(); URL.revokeObjectURL(link.href);
+        }
+
         // Initialize on DOMContentLoaded
         window.addEventListener('DOMContentLoaded', () => {
             // Theme handled by IIFE
             
             // Auth + initial data
             const navUser = document.getElementById('navUserLabel');
+            const userMenu = document.getElementById('userMenu');
             const logoutBtn = document.getElementById('logoutBtn');
-            if (logoutBtn) logoutBtn.addEventListener('click', (e)=>{ e.preventDefault(); clearAuth(); if(navUser) navUser.textContent = 'Guest'; showToast('Logged out.','success'); try { window.location.href = '/'; } catch {} });
+            if (logoutBtn) logoutBtn.addEventListener('click', async (e)=>{
+                e.preventDefault();
+                // Try server-side logout (best-effort)
+                try { await apiFetch(`${API_URL}/logout`, { method: 'POST' }); } catch(_) {}
+                clearAuth();
+                if(userMenu) userMenu.classList.add('d-none');
+                showToast('Logged out.','success');
+                try { window.location.href = '/'; } catch {}
+            });
+
+            // Profile/Settings modals wiring
+            function getSettings(){
+                try { return JSON.parse(localStorage.getItem('appSettings')||'{}'); } catch { return {}; }
+            }
+            function setSettings(obj){
+                try { localStorage.setItem('appSettings', JSON.stringify(obj||{})); } catch {}
+            }
+            function getProfile(){
+                try { return JSON.parse(localStorage.getItem('appProfile')||'{}'); } catch { return {}; }
+            }
+            function setProfile(obj){
+                try { localStorage.setItem('appProfile', JSON.stringify(obj||{})); } catch {}
+            }
+
+            const openProfile = document.getElementById('openProfile');
+            const openSettings = document.getElementById('openSettings');
+            const saveProfileBtn = document.getElementById('saveProfileBtn');
+            const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+
+            if (openProfile) openProfile.addEventListener('click', (e)=>{
+                e.preventDefault();
+                const p = getProfile();
+                const u = getAuthUser();
+                document.getElementById('profileUsername').value = u;
+                document.getElementById('profileEmail').value = p.email||'';
+                document.getElementById('profileFullName').value = p.fullName||'';
+                document.getElementById('profileBio').value = p.bio||'';
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('profileModal')).show();
+            });
+            if (saveProfileBtn) saveProfileBtn.addEventListener('click', ()=>{
+                const p = {
+                    email: document.getElementById('profileEmail').value.trim(),
+                    fullName: document.getElementById('profileFullName').value.trim(),
+                    bio: document.getElementById('profileBio').value.trim()
+                };
+                setProfile(p);
+                bootstrap.Modal.getInstance(document.getElementById('profileModal')).hide();
+                showToast('Profile saved','success');
+            });
+
+            if (openSettings) openSettings.addEventListener('click', (e)=>{
+                e.preventDefault();
+                const s = getSettings();
+                document.getElementById('setPageSize').value = String(s.pageSize||10);
+                document.getElementById('setChartType').value = s.chartType||'bar';
+                document.getElementById('setDarkMode').checked = (localStorage.getItem('theme')||'light')==='dark';
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('settingsModal')).show();
+            });
+            if (saveSettingsBtn) saveSettingsBtn.addEventListener('click', ()=>{
+                const s = getSettings();
+                const newS = {
+                    ...s,
+                    pageSize: parseInt(document.getElementById('setPageSize').value)||10,
+                    chartType: document.getElementById('setChartType').value
+                };
+                setSettings(newS);
+                // Apply immediately
+                const desiredTheme = document.getElementById('setDarkMode').checked ? 'dark' : 'light';
+                const currentTheme = document.body.getAttribute('data-theme');
+                if (desiredTheme !== currentTheme) {
+                    const themeBtn = document.getElementById('themeToggle');
+                    themeBtn?.click();
+                }
+                // If products page is active, re-render with new page size
+                const pageSizeSel = document.getElementById('productPageSize');
+                if (pageSizeSel) { pageSizeSel.value = String(newS.pageSize); }
+                bootstrap.Modal.getInstance(document.getElementById('settingsModal')).hide();
+                showToast('Settings saved','success');
+            });
 
             const token = getAuthToken();
             if (!token) {
                 try { window.location.href = '/'; return; } catch {}
             } else {
-                if(navUser) navUser.textContent = 'Admin';
+                if(navUser) navUser.textContent = getAuthUser();
+                if(userMenu) userMenu.classList.remove('d-none');
                 loadDashboard().catch(err => {
                     console.error("Initial dashboard load failed:", err);
                     showToast(`Failed to load initial dashboard: ${err.message}`, "error");
@@ -1968,6 +2212,25 @@
                     if (!withinSidebar && !isToggle) sidebar.classList.remove('open');
                 });
             }
+
+            // Export button
+            const exportBtn = document.getElementById('exportReportBtn');
+            if (exportBtn) exportBtn.addEventListener('click', () => exportTableToCSV());
+
+            // Re-render when chart type changes or date changes
+            const chartTypeSel = document.getElementById('reportChartType');
+            if (chartTypeSel) chartTypeSel.addEventListener('change', () => {
+                const active = document.querySelector('#reports-section .btn-outline-primary.active');
+                const match = active?.getAttribute('onclick')?.match(/loadReport\('([^']+)'\)/);
+                if (match && match[1]) loadReport(match[1]);
+            });
+            const fromEl = document.getElementById('reportFrom');
+            const toEl = document.getElementById('reportTo');
+            [fromEl, toEl].forEach(el=> el?.addEventListener('change', () => {
+                const active = document.querySelector('#reports-section .btn-outline-primary.active');
+                const match = active?.getAttribute('onclick')?.match(/loadReport\('([^']+)'\)/);
+                if (match && match[1]) loadReport(match[1]);
+            }));
 
             // Real-time validation for all relevant fields
             const attachValidation = (el) => {

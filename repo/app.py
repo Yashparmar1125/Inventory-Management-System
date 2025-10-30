@@ -12,6 +12,7 @@ from typing import Optional, Dict, Any, Tuple
 import os
 from contextlib import contextmanager
 from decimal import Decimal
+from werkzeug.security import generate_password_hash, check_password_hash
 
 try:
     from dotenv import load_dotenv
@@ -38,6 +39,12 @@ DB_CONFIG = {
 ADMIN_TOKEN = os.getenv('ADMIN_TOKEN', 'dev')
 ADMIN_USERNAME = os.getenv('ADMIN_USERNAME', 'admin')
 ADMIN_PASSWORD = os.getenv('ADMIN_PASSWORD', 'admin')
+TOKEN_TTL_SECONDS = int(os.getenv('TOKEN_TTL_SECONDS', '43200'))  # 12 hours by default
+
+# In-memory token store (token -> {user, issued_at})
+from secrets import token_urlsafe
+from time import time
+ACTIVE_TOKENS: dict[str, dict] = {}
 
 # Database Connection Helper
 def get_db_connection():
@@ -156,6 +163,82 @@ def _extract_bearer_token() -> Optional[str]:
     return None
 
 
+def _generate_token() -> str:
+    # 256-bit token, URL safe
+    return token_urlsafe(32)
+
+
+def _is_token_valid(tkn: Optional[str]) -> bool:
+    if not tkn:
+        return False
+    data = ACTIVE_TOKENS.get(tkn)
+    if not data:
+        return False
+    # TTL check
+    issued = data.get('issued_at', 0)
+    if TOKEN_TTL_SECONDS > 0 and (time() - issued) > TOKEN_TTL_SECONDS:
+        try:
+            ACTIVE_TOKENS.pop(tkn, None)
+        finally:
+            return False
+    return True
+
+
+def _revoke_token(tkn: Optional[str]) -> None:
+    if not tkn:
+        return
+    ACTIVE_TOKENS.pop(tkn, None)
+
+
+def _convert_decimals(obj):
+    """Recursively convert Decimal values into float for JSON serialization."""
+    if isinstance(obj, Decimal):
+        try:
+            return float(obj)
+        except Exception:
+            return 0.0
+    if isinstance(obj, list):
+        return [_convert_decimals(i) for i in obj]
+    if isinstance(obj, dict):
+        return {k: _convert_decimals(v) for k, v in obj.items()}
+    return obj
+
+# ==================== ADMIN JSON CONFIG ====================
+ADMIN_CONFIG_PATH = os.path.join(os.path.dirname(__file__), 'admin.json')
+
+def _ensure_admin_config():
+    # If file missing, create with current env credentials
+    if not os.path.exists(ADMIN_CONFIG_PATH):
+        data = {
+            'username': ADMIN_USERNAME,
+            'password_hash': generate_password_hash(ADMIN_PASSWORD),
+        }
+        try:
+            with open(ADMIN_CONFIG_PATH, 'w', encoding='utf-8') as f:
+                import json
+                json.dump(data, f)
+        except Exception as e:
+            print(f"Failed to write admin.json: {e}")
+
+def _load_admin_config() -> dict:
+    _ensure_admin_config()
+    try:
+        import json
+        with open(ADMIN_CONFIG_PATH, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Failed to read admin.json: {e}")
+        return {'username': ADMIN_USERNAME, 'password_hash': generate_password_hash(ADMIN_PASSWORD)}
+
+def _save_admin_config(data: dict) -> None:
+    try:
+        import json
+        with open(ADMIN_CONFIG_PATH, 'w', encoding='utf-8') as f:
+            json.dump(data, f)
+    except Exception as e:
+        print(f"Failed to save admin.json: {e}")
+
+
 @app.before_request
 def _protect_api_routes():
     # Allow public endpoints
@@ -165,7 +248,7 @@ def _protect_api_routes():
     if path in ('/api/login', '/api/health') or path.startswith('/api/reports') and request.method == 'GET':
         return
     token = _extract_bearer_token()
-    if token != ADMIN_TOKEN:
+    if not _is_token_valid(token):
         return jsonify({'error': 'Unauthorized'}), 401
 
 
@@ -195,17 +278,75 @@ def health():
     except Exception:
         return jsonify({'status': 'unhealthy'}), 500
 
+@app.route('/api/me', methods=['GET'])
+def api_me():
+    token = _extract_bearer_token()
+    if not _is_token_valid(token):
+        return jsonify({'error': 'Unauthorized'}), 401
+    data = ACTIVE_TOKENS.get(token, {})
+    return jsonify({'user': data.get('user', ADMIN_USERNAME), 'tokenIssuedAt': data.get('issued_at', 0), 'ttlSeconds': TOKEN_TTL_SECONDS}), 200
+
 @app.route('/api/login', methods=['POST'])
 def api_login():
     try:
         data = request.get_json(silent=True) or {}
         username = str(data.get('username', '')).strip()
         password = str(data.get('password', ''))
-        if username != ADMIN_USERNAME or password != ADMIN_PASSWORD:
+        cfg = _load_admin_config()
+        valid = False
+        if username == cfg.get('username'):
+            # Prefer hashed verification
+            pw_hash = cfg.get('password_hash')
+            if pw_hash and check_password_hash(pw_hash, password):
+                valid = True
+            # Fallback: accept plaintext stored password (if present)
+            elif cfg.get('password') and password == cfg.get('password'):
+                valid = True
+        if not valid:
             return jsonify({'error': 'Invalid credentials'}), 401
-        return jsonify({'token': ADMIN_TOKEN, 'user': {'username': ADMIN_USERNAME}}), 200
+        # Issue unique token per login
+        token = _generate_token()
+        ACTIVE_TOKENS[token] = {'user': cfg.get('username','admin'), 'issued_at': time()}
+        return jsonify({'token': token, 'user': {'username': cfg.get('username','admin'), 'ttlSeconds': TOKEN_TTL_SECONDS}}), 200
     except Exception:
         return jsonify({'error': 'Login failed'}), 400
+
+@app.route('/api/logout', methods=['POST'])
+def api_logout():
+    try:
+        token = _extract_bearer_token()
+        _revoke_token(token)
+        return jsonify({'message': 'Logged out'}), 200
+    except Exception:
+        return jsonify({'error': 'Logout failed'}), 400
+
+@app.route('/api/admin/profile', methods=['GET'])
+def admin_profile():
+    token = _extract_bearer_token()
+    if not _is_token_valid(token):
+        return jsonify({'error': 'Unauthorized'}), 401
+    cfg = _load_admin_config()
+    return jsonify({'username': cfg.get('username') , 'email': None}), 200
+
+@app.route('/api/admin/password', methods=['PUT'])
+def admin_change_password():
+    token = _extract_bearer_token()
+    if not _is_token_valid(token):
+        return jsonify({'error': 'Unauthorized'}), 401
+    body = request.get_json(silent=True) or {}
+    current_pw = str(body.get('currentPassword',''))
+    new_pw = str(body.get('newPassword',''))
+    if len(new_pw) < 6:
+        return jsonify({'error': 'New password must be at least 6 characters'}), 400
+    cfg = _load_admin_config()
+    if not check_password_hash(cfg.get('password_hash',''), current_pw):
+        return jsonify({'error': 'Current password is incorrect'}), 400
+    # Save new password
+    cfg['password_hash'] = generate_password_hash(new_pw)
+    _save_admin_config(cfg)
+    # Revoke all sessions for safety
+    ACTIVE_TOKENS.clear()
+    return jsonify({'message': 'Password updated. Please log in again.'}), 200
 
 # Admin: Initialize PostgreSQL schema (use with caution). Protect with ADMIN_TOKEN.
 @app.route('/admin/init-db', methods=['POST'])
@@ -986,7 +1127,7 @@ def get_low_stock():
         products = cursor.fetchall()
         cursor.close()
         conn.close()
-        return jsonify(products), 200
+        return jsonify(_convert_decimals(products)), 200
     except Error as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1024,7 +1165,7 @@ def get_sales_summary():
         cursor.close()
         conn.close()
         
-        return jsonify(sales), 200
+        return jsonify(_convert_decimals(sales)), 200
     except Error as e:
         return jsonify({'error': str(e)}), 500
 
@@ -1035,12 +1176,13 @@ def get_top_products():
         conn, cursor = get_cursor(dictionary=True)
         
         query = """
-            SELECT p.ProductName, SUM(s.QuantitySold) as TotalSold, 
-                   SUM(s.TotalAmount) as Revenue
+            SELECT p.ProductName AS "ProductName",
+                   COALESCE(SUM(s.QuantitySold), 0) AS "TotalSold",
+                   COALESCE(SUM(s.TotalAmount), 0) AS "Revenue"
             FROM Sales s
             JOIN Product p ON s.ProductID = p.ProductID
             GROUP BY p.ProductID, p.ProductName
-            ORDER BY TotalSold DESC
+            ORDER BY "TotalSold" DESC
             LIMIT 10
         """
         cursor.execute(query)
@@ -1049,7 +1191,7 @@ def get_top_products():
         cursor.close()
         conn.close()
         
-        return jsonify(products), 200
+        return jsonify(_convert_decimals(products)), 200
     except Error as e:
         return jsonify({'error': str(e)}), 500
 

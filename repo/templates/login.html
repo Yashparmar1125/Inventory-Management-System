@@ -436,6 +436,7 @@
         }
         function setAuth(token){ try { localStorage.setItem('authToken', token||''); } catch {}
         }
+        function setAuthUser(username){ try { localStorage.setItem('authUser', username||'Admin'); } catch {} }
         function getAuth(){ try { return localStorage.getItem('authToken') || ''; } catch { return ''; } }
 
         // If already logged in, show Open App button and optionally redirect
@@ -485,6 +486,7 @@
                 const res = await apiFetch(`${API_URL}/login`, { method: 'POST', body: { username, password } });
                 if (!res || !res.token) throw new Error('Invalid login response');
                 setAuth(res.token);
+                setAuthUser(username || 'Admin');
                 showToast('Signed in successfully.', 'success');
                 window.location.href = '/app';
             } catch (err) {
