@@ -916,10 +916,20 @@
                             <label for="supplierContact">Contact Person</label>
                             <div id="supplierContactFeedback" class="invalid-feedback">Enter a valid name (letters, spaces, apostrophes, hyphens, dots).</div>
                         </div>
-                        <div class="form-floating mb-3">
-                            <input type="tel" class="form-control" id="supplierPhone" placeholder="Phone" inputmode="tel" pattern="^\+?[0-9\s().-]{7,20}$" maxlength="20" aria-describedby="supplierPhoneFeedback">
-                            <label for="supplierPhone">Phone</label>
-                            <div id="supplierPhoneFeedback" class="invalid-feedback">Enter a valid phone (7-20 chars, digits, +, space, (), ., -).</div>
+                        <div class="mb-3">
+                            <label for="supplierPhone" class="form-label">Phone</label>
+                            <div class="input-group">
+                                <select class="form-select" id="supplierPhoneCode" style="max-width: 140px">
+                                    <option value="+91" data-len="10">🇮🇳 +91</option>
+                                    <option value="+1" data-len="10">🇺🇸 +1</option>
+                                    <option value="+44" data-len="10">🇬🇧 +44</option>
+                                    <option value="+61" data-len="9">🇦🇺 +61</option>
+                                    <option value="+971" data-len="9">🇦🇪 +971</option>
+                                    <option value="+81" data-len="10">🇯🇵 +81</option>
+                                </select>
+                                <input type="tel" class="form-control" id="supplierPhone" placeholder="Phone number" inputmode="numeric" aria-describedby="supplierPhoneFeedback" maxlength="15">
+                                <div id="supplierPhoneFeedback" class="invalid-feedback">Enter a valid number for the selected country.</div>
+                            </div>
                         </div>
                         <div class="form-floating mb-3">
                             <input type="email" class="form-control" id="supplierEmail" placeholder="Email" maxlength="120" aria-describedby="supplierEmailFeedback">
@@ -956,10 +966,20 @@
                             <label for="customerName">Customer Name *</label>
                             <div id="customerNameFeedback" class="invalid-feedback">Enter a valid name: letters, spaces, apostrophes, hyphens, dots; min 2 chars.</div>
                         </div>
-                        <div class="form-floating mb-3">
-                            <input type="tel" class="form-control" id="customerPhone" placeholder="Phone" inputmode="tel" pattern="^\+?[0-9\s().-]{7,20}$" maxlength="20" aria-describedby="customerPhoneFeedback">
-                            <label for="customerPhone">Phone</label>
-                            <div id="customerPhoneFeedback" class="invalid-feedback">Enter a valid phone (7-20 chars, digits, +, space, (), ., -).</div>
+                        <div class="mb-3">
+                            <label for="customerPhone" class="form-label">Phone</label>
+                            <div class="input-group">
+                                <select class="form-select" id="customerPhoneCode" style="max-width: 140px">
+                                    <option value="+91" data-len="10">🇮🇳 +91</option>
+                                    <option value="+1" data-len="10">🇺🇸 +1</option>
+                                    <option value="+44" data-len="10">🇬🇧 +44</option>
+                                    <option value="+61" data-len="9">🇦🇺 +61</option>
+                                    <option value="+971" data-len="9">🇦🇪 +971</option>
+                                    <option value="+81" data-len="10">🇯🇵 +81</option>
+                                </select>
+                                <input type="tel" class="form-control" id="customerPhone" placeholder="Phone number" inputmode="numeric" aria-describedby="customerPhoneFeedback" maxlength="15">
+                                <div id="customerPhoneFeedback" class="invalid-feedback">Enter a valid number for the selected country.</div>
+                            </div>
                         </div>
                         <div class="form-floating mb-3">
                             <input type="email" class="form-control" id="customerEmail" placeholder="Email" maxlength="120" aria-describedby="customerEmailFeedback">
@@ -1662,7 +1682,26 @@
             suppliersTableBody.innerHTML = t;
         }
         function openSupplierModal(supplier = null) { /* ... */
-             const m=document.getElementById('supplierModal'), t=document.getElementById('supplierModalTitle'), f=document.getElementById('supplierForm'); if(!m||!t||!f)return; f.reset(); document.getElementById('supplierId').value=''; if(supplier){t.textContent='Edit';document.getElementById('supplierId').value=supplier.SupplierID;document.getElementById('supplierName').value=supplier.SupplierName;document.getElementById('supplierContact').value=supplier.ContactPerson||'';document.getElementById('supplierPhone').value=supplier.Phone||'';document.getElementById('supplierEmail').value=supplier.Email||'';document.getElementById('supplierAddress').value=supplier.Address||'';}else{t.textContent='Add';} bootstrap.Modal.getOrCreateInstance(m).show();
+             const m=document.getElementById('supplierModal'), t=document.getElementById('supplierModalTitle'), f=document.getElementById('supplierForm'); if(!m||!t||!f)return; f.reset(); document.getElementById('supplierId').value='';
+             const setPhone = (full, codeId, inputId) => {
+                 const codeEl=document.getElementById(codeId), inputEl=document.getElementById(inputId); if(!codeEl||!inputEl) return;
+                 const value = String(full||'');
+                 const options=[...codeEl.options].map(o=>o.value).sort((a,b)=>b.length-a.length);
+                 let chosen = codeEl.options[0].value; let rest = value;
+                 if (value.startsWith('+')) { const match = options.find(v=>value.startsWith(v)); if(match){ chosen=match; rest=value.slice(match.length); } }
+                 codeEl.value = chosen;
+                 inputEl.value = (rest||'').replace(/\D/g,'');
+             };
+             if(supplier){
+                 t.textContent='Edit';
+                 document.getElementById('supplierId').value=supplier.SupplierID;
+                 document.getElementById('supplierName').value=supplier.SupplierName;
+                 document.getElementById('supplierContact').value=supplier.ContactPerson||'';
+                 setPhone(supplier.Phone,'supplierPhoneCode','supplierPhone');
+                 document.getElementById('supplierEmail').value=supplier.Email||'';
+                 document.getElementById('supplierAddress').value=supplier.Address||'';
+             }else{t.textContent='Add';}
+             bootstrap.Modal.getOrCreateInstance(m).show();
          }
         async function editSupplier(id) { /* ... */ try { showToast("Loading...", "info"); const s=await apiFetch(`${API_URL}/suppliers/${id}`); openSupplierModal(s); } catch(e){showToast(`Load failed: ${e.message}`,'error');} }
         async function saveSupplier() { /* ... */
@@ -1702,7 +1741,7 @@
             let t=''; customersFiltered.forEach(c=>t+=`<tr><td>${c.CustomerID}</td><td>${c.CustomerName||'N/A'}</td><td>${c.Phone||'N/A'}</td><td>${c.Email||'N/A'}</td><td>${c.Address||'N/A'}</td><td class="text-end"><button class="btn btn-sm btn-outline-primary" onclick="editCustomer(${c.CustomerID})" title="Edit"><i class="bi bi-pencil-fill"></i></button> <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomer(${c.CustomerID})" title="Delete"><i class="bi bi-trash-fill"></i></button></td></tr>`);
             customersTableBody.innerHTML=t;
         }
-        function openCustomerModal(customer = null) { /* ... */ const m=document.getElementById('customerModal'), t=document.getElementById('customerModalTitle'), f=document.getElementById('customerForm'); if(!m||!t||!f)return; f.reset(); document.getElementById('customerId').value=''; if(customer){t.textContent='Edit';document.getElementById('customerId').value=customer.CustomerID;document.getElementById('customerName').value=customer.CustomerName;document.getElementById('customerPhone').value=customer.Phone||'';document.getElementById('customerEmail').value=customer.Email||'';document.getElementById('customerAddress').value=customer.Address||'';}else{t.textContent='Add';} bootstrap.Modal.getOrCreateInstance(m).show();}
+        function openCustomerModal(customer = null) { /* ... */ const m=document.getElementById('customerModal'), t=document.getElementById('customerModalTitle'), f=document.getElementById('customerForm'); if(!m||!t||!f)return; f.reset(); document.getElementById('customerId').value=''; const setPhone=(full,codeId,inputId)=>{const codeEl=document.getElementById(codeId), inputEl=document.getElementById(inputId); if(!codeEl||!inputEl)return; const value=String(full||''); const options=[...codeEl.options].map(o=>o.value).sort((a,b)=>b.length-a.length); let chosen=codeEl.options[0].value, rest=value; if(value.startsWith('+')){ const match=options.find(v=>value.startsWith(v)); if(match){chosen=match; rest=value.slice(match.length);} } codeEl.value=chosen; inputEl.value=(rest||'').replace(/\D/g,'');}; if(customer){t.textContent='Edit';document.getElementById('customerId').value=customer.CustomerID;document.getElementById('customerName').value=customer.CustomerName; setPhone(customer.Phone,'customerPhoneCode','customerPhone'); document.getElementById('customerEmail').value=customer.Email||'';document.getElementById('customerAddress').value=customer.Address||'';}else{t.textContent='Add';} bootstrap.Modal.getOrCreateInstance(m).show();}
         async function editCustomer(id) { /* ... */ try {showToast("Loading...", "info"); const c=await apiFetch(`${API_URL}/customers/${id}`); openCustomerModal(c);} catch(e){showToast(`Load failed: ${e.message}`,'error');}}
         async function saveCustomer() { /* ... */
              const f=document.getElementById('customerForm'); if(!f.checkValidity()){f.reportValidity();showToast('Name required.','warning');return;} const id=document.getElementById('customerId').value; const d={CustomerName:document.getElementById('customerName').value.trim(),Phone:document.getElementById('customerPhone').value.trim(),Email:document.getElementById('customerEmail').value.trim(),Address:document.getElementById('customerAddress').value.trim()}; const u=id?`${API_URL}/customers/${id}`:`${API_URL}/customers`; const m=id?'PUT':'POST'; const b=document.querySelector('#customerModal .btn-primary'); const o=b.innerHTML; b.disabled=true; b.innerHTML=`<span class="spinner-border spinner-border-sm"></span> Saving...`; try {await apiFetch(u,{method:m,body:d}); bootstrap.Modal.getInstance(document.getElementById('customerModal')).hide(); showToast(`Customer ${id?'updated':'added'}!`,'success'); await loadCustomers(); if(document.getElementById('dashboard-section').classList.contains('active')) await loadDashboard();} catch(e){showToast(`Save failed: ${e.message}`,'error');} finally {b.disabled=false; b.innerHTML=o;}
@@ -1950,6 +1989,29 @@
                                        #saleForm input, #saleForm select,\
                                        #purchaseForm input, #purchaseForm select')
                     .forEach(attachValidation);
+            // Phone validation (country-aware)
+            const digitsOnly = (v) => (v||'').replace(/\D/g,'');
+            const attachPhoneValidation = (codeId, inputId, feedbackId) => {
+                const codeEl = document.getElementById(codeId);
+                const inputEl = document.getElementById(inputId);
+                const feedbackEl = document.getElementById(feedbackId);
+                if (!codeEl || !inputEl) return;
+                const validate = () => {
+                    const len = parseInt(codeEl.selectedOptions?.[0]?.dataset?.len || '10');
+                    const digits = digitsOnly(inputEl.value);
+                    inputEl.value = digits; // keep numeric only
+                    if (digits.length === 0) { inputEl.classList.remove('is-valid','is-invalid'); return; }
+                    if (digits.length !== len) {
+                        inputEl.classList.add('is-invalid'); inputEl.classList.remove('is-valid');
+                        if (feedbackEl) feedbackEl.textContent = `Enter ${len} digits for ${codeEl.value}.`;
+                    } else { inputEl.classList.add('is-valid'); inputEl.classList.remove('is-invalid'); }
+                };
+                inputEl.addEventListener('input', validate);
+                inputEl.addEventListener('blur', validate);
+                codeEl.addEventListener('change', validate);
+            };
+            attachPhoneValidation('supplierPhoneCode','supplierPhone','supplierPhoneFeedback');
+            attachPhoneValidation('customerPhoneCode','customerPhone','customerPhoneFeedback');
             // Login handlers removed (using standalone login page)
 
         });
