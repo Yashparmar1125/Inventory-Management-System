@@ -1,161 +1,396 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Inventory — Inventory Management</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
 
     <style>
-        :root { 
-            --primary-color: #5e50f9; 
-            --primary-rgb: 94,80,249;
-            --light-gray: #f7f7fb;
-            --text-dark: #111827;
-            --text-light: #6b7280;
+        :root {
+            --primary-color: #5B5FFF;
+            --primary-rgb: 91, 95, 255;
+            --primary-hover: #4A4EF5;
+            --secondary-color: #7C3AED;
+            --accent-color: #EC4899;
+            --success-color: #10B981;
+            --danger-color: #EF4444;
+            --warning-color: #F59E0B;
+            --gray-50: #F9FAFB;
+            --gray-100: #F3F4F6;
+            --gray-200: #E5E7EB;
+            --gray-500: #6B7280;
+            --gray-600: #4B5563;
+            --gray-700: #374151;
+            --gray-800: #1F2937;
+            --gray-900: #111827;
+            --text-dark: var(--gray-900);
+            --text-light: var(--gray-600);
+            --border-color: var(--gray-200);
+            --border-light: rgba(0, 0, 0, 0.06);
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
 
         /* 1. Global & Typography */
-        body { 
+        * {
+            scroll-behavior: smooth;
+        }
+
+        body {
             font-family: 'Inter', sans-serif;
-            background:
-                radial-gradient(1200px 600px at -10% -10%, rgba(var(--primary-rgb),0.14), transparent 60%),
-                radial-gradient(900px 500px at 110% 0%, rgba(130,95,255,0.12), transparent 55%),
-                var(--light-gray);
+            background: var(--gray-50);
             color: var(--text-dark);
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+            position: relative;
+            font-size: 14px;
+            overflow-x: hidden;
         }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at top right, rgba(91, 95, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom left, rgba(124, 58, 237, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
         .lead {
             font-weight: 400;
         }
 
-        /* 2. Navbar */
-        .navbar-brand { 
-            font-weight: 700; 
-            color: var(--primary-color) !important; 
-        }
+        /* 2. Premium Navbar */
         .navbar.glass {
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: saturate(180%) blur(10px);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            box-shadow: var(--shadow-sm);
+            border-bottom: 1px solid var(--border-light);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        /* --- Style for the navbar shadow on scroll --- */
+        .navbar.glass.sticky-shadow.scrolled {
+            box-shadow: var(--shadow-md);
+            background: rgba(255, 255, 255, 0.95);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--text-primary) !important;
+            font-size: 1.125rem;
+            letter-spacing: -0.02em;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .navbar-brand i {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .navbar-brand:hover {
+            color: var(--primary-color) !important;
+            transform: translateX(2px);
+        }
+
         .navbar .nav-link {
             font-weight: 500;
-            color: var(--text-dark);
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            padding: 0.5rem 1rem;
         }
+
         .navbar .nav-link:hover {
             color: var(--primary-color);
         }
 
-        /* 3. Hero Section */
-        .hero { 
-            padding: 96px 0 64px; 
-        }
-        .hero-title { 
-            font-weight: 800; 
-            letter-spacing: -1.2px; 
-            color: var(--text-dark);
-            font-size: calc(1.475rem + 2.7vw); /* Responsive large font */
-            line-height: 1.2;
-        }
-        @media (min-width: 1200px) {
-            .hero-title { font-size: 3.75rem; }
-        }
-        .hero-sub { 
-            color: var(--text-light);
-            font-size: 1.2rem;
-        }
-        .hero .btn-lg {
-            padding: 14px 32px;
-            font-weight: 500;
+        .navbar .btn-primary {
+            padding: 0.5rem 1.25rem;
+            font-weight: 600;
             border-radius: 0.5rem;
         }
-        .hero-image {
-            border-radius: 0.75rem;
-            /* A more modern, layered shadow */
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15), 0 10px 15px -5px rgba(0,0,0,0.1);
-            border: 1px solid rgba(0,0,0,0.05);
-            transform: translateZ(0);
-            transition: transform .35s ease, box-shadow .35s ease;
+
+        /* 3. Premium Hero Section */
+        .hero {
+            padding: 30px 0 120px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(180deg, #ffffff 0%, #fafaff 100%);
         }
-        .hero-image:hover { 
-            transform: translateY(-6px);
-            box-shadow: 0 30px 60px -15px rgba(0,0,0,0.2), 0 12px 18px -6px rgba(0,0,0,0.12);
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(91, 95, 255, 0.06) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.04) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 25s ease-in-out infinite reverse;
+        }
+
+        .hero-title {
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--text-dark);
+            font-size: calc(2.5rem + 2vw);
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-title .highlight {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline;
+        }
+
+        /* --- Animated Gradient for Hero Title --- */
+        .hero-title .gradient-text {
+            background-size: 200% auto;
+            animation: gradientShimmer 3s linear infinite;
+        }
+
+        @keyframes gradientShimmer {
+            0% {
+                background-position: 200% 0;
+            }
+
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .hero-title {
+                font-size: 4.5rem;
+            }
+        }
+
+        .hero-sub {
+            color: var(--gray-600);
+            font-size: 1.125rem;
+            font-weight: 400;
+            margin-bottom: 2.5rem;
+            line-height: 1.7;
+            max-width: 540px;
+        }
+
+        .hero .btn-lg {
+            padding: 0.875rem 2rem;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            letter-spacing: -0.01em;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+
+        .hero .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .hero .btn-primary:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .hero .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(91, 95, 255, 0.4);
+        }
+
+        .hero .btn-outline-primary {
+            border: 1.5px solid var(--border-color);
+            color: var(--text-primary);
+            background: white;
+        }
+
+        .hero .btn-outline-primary:hover {
+            border-color: var(--primary-color);
+            background: rgba(var(--primary-rgb), 0.06);
+            color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .hero-image {
+            border-radius: 1rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-light);
+            transform: translateZ(0);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .hero-image:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-2xl);
         }
 
         /* 4. Section Styling */
         .section {
             padding: 80px 0;
         }
-        .section-header { 
-            margin-bottom: 48px; 
+
+        .section-header {
+            margin-bottom: 48px;
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
         }
-        .section-header h2 { 
-            font-weight: 700; 
+
+        .section-header h2 {
+            font-weight: 700;
             letter-spacing: -0.5px;
             color: var(--text-dark);
         }
-        .section-header p { 
-            color: var(--text-light); 
-            font-size: 1.1rem; 
+
+        .section-header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
         }
-        
+
         /* 5. Features Section */
         #features {
-            background-color: #ffffff;
-            border-top: 1px solid #e5e7eb;
-            border-bottom: 1px solid #e5e7eb;
+            background: #ffffff;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
         }
+
         .feature-card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            border: 1px solid var(--gray-200);
             border-radius: 0.75rem;
-            padding: 24px;
-            transition: all 0.3s ease;
+            padding: 1.5rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             height: 100%;
-            will-change: transform;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
         }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color), var(--accent-color));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s ease;
+        }
+
         .feature-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.07);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--gray-500);
         }
-        .feature-icon { 
-            width: 48px; height: 48px; 
-            display: inline-flex; 
-            align-items: center; 
-            justify-content: center; 
-            border-radius: 10px; 
-            background: rgba(var(--primary-rgb),0.1); 
+
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .feature-icon {
+            width: 3.5rem;
+            height: 3.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+            background: rgba(var(--primary-rgb), 0.08);
             color: var(--primary-color);
             font-size: 1.5rem;
+            transition: all 0.2s ease;
+            margin-bottom: 1.25rem;
         }
-        .feature-card h5 { 
-            font-weight: 700; 
-            margin-top: 16px; 
-            margin-bottom: 8px;
+
+        .feature-card:hover .feature-icon {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .feature-card h5 {
+            font-weight: 700;
+            margin-top: 1.25rem;
+            margin-bottom: 0.75rem;
             color: var(--text-dark);
+            font-size: 1.125rem;
+            letter-spacing: -0.01em;
         }
-        .feature-card p { 
-            color: var(--text-light); 
-            font-size: 0.95rem;
+
+        .feature-card p {
+            color: var(--gray-600);
+            font-size: 0.9375rem;
             line-height: 1.6;
+            margin: 0;
         }
 
         /* 6. Why Us Section */
         #why img {
             border-radius: 0.75rem;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
         }
+
         #why .text-primary {
             color: var(--primary-color) !important;
             font-weight: 700;
@@ -163,96 +398,981 @@
             text-transform: uppercase;
             font-size: 0.9rem;
         }
+
         #why h2 {
             font-weight: 700;
             letter-spacing: -0.5px;
         }
 
-        /* 7. Final CTA Section */
-        #contact {
-            background: linear-gradient(45deg, var(--primary-color), #825fff);
-            color: #fff;
-            border-radius: 1rem;
-            box-shadow: 0 20px 40px -20px rgba(var(--primary-rgb), .55);
-        }
-        #contact h2 {
-            font-weight: 700;
-        }
-        #contact .btn-light {
-            font-weight: 700;
-            color: var(--primary-color);
-            padding: 12px 28px;
+        /* 7. Premium CTA Section */
+        .cta-section {
+            background: var(--gray-50);
         }
 
-        /* 8. Footer */
-        footer { 
-            padding: 32px 0;
-            color: var(--text-light); 
-            font-size: 0.9rem;
+        .cta-box {
+            background: linear-gradient(135deg, #5B5FFF 0%, #7C3AED 50%, #EC4899 100%);
+            border-radius: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(91, 95, 255, 0.3);
         }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+            pointer-events: none;
+            border-radius: 50%;
+            animation: float 15s ease-in-out infinite;
+        }
+
+        .cta-box::after {
+            content: '';
+            position: absolute;
+            bottom: -40%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+            border-radius: 50%;
+            animation: float 20s ease-in-out infinite reverse;
+        }
+
+        .cta-box .row {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-box .btn-outline-light {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .cta-box .btn-outline-light:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: white;
+        }
+
+        #contact .btn-light {
+            font-weight: 600;
+            color: var(--primary-color);
+            background: white;
+            padding: 0.875rem 2rem;
+            border-radius: 0.75rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            font-size: 1rem;
+        }
+
+        #contact .btn-light:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        /* 8. Premium Footer */
+        footer {
+            padding: 3rem 0;
+            background: var(--gray-50);
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            border-top: 1px solid var(--border-light);
+        }
+
         .footer-brand {
             font-weight: 700;
             color: var(--text-dark);
+            font-size: 1.125rem;
+            margin-bottom: 0.75rem;
+            letter-spacing: -0.01em;
         }
+
         .footer-links a {
             color: var(--text-light);
             text-decoration: none;
             font-size: 1.25rem;
-            margin-left: 16px;
-        }
-        .footer-links a:hover { 
-            color: var(--primary-color); 
+            margin: 0 8px;
+            transition: all 0.2s ease;
         }
 
-        /* 9. Modal */
-        .modal-header, .modal-footer {
-            border: none;
-            padding: 1rem 1.5rem;
+        .footer-links a:hover {
+            color: var(--primary-color);
+            transform: translateY(-2px);
         }
+
+        /* 9. Premium Modal */
         .modal-content {
-            border-radius: 0.75rem;
-            border: none;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            border-radius: 1rem;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-2xl);
         }
+
+        .modal-header {
+            border-bottom: 1px solid var(--border-light);
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            border-top: none;
+            padding: 1.5rem;
+        }
+
+        .modal-backdrop {
+            backdrop-filter: blur(4px);
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
         .modal-brand-icon {
-            width: 40px; height: 40px;
+            width: 3rem;
+            height: 3rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
-            background: rgba(var(--primary-rgb),0.1);
+            border-radius: 0.75rem;
+            background: rgba(var(--primary-rgb), 0.1);
             color: var(--primary-color);
-            font-size: 1.25rem;
-            margin: 0 auto 16px;
+            font-size: 1.5rem;
+            margin: 0 auto 1rem;
         }
+
         .modal-body {
             padding: 1.5rem;
         }
-        .modal-footer .btn {
-            padding: 10px 20px;
+
+        .modal-body .form-control {
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+            font-size: 0.9375rem;
         }
+
+        .modal-body .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+        }
+
+        .modal-footer .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+        }
+
         .modal-footer .btn-primary {
             width: 100%;
         }
 
+        /* 10. Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .hero {
+                padding: 80px 0 60px;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .hero-sub {
+                font-size: 1.1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .hero .btn-lg {
+                padding: 14px 32px;
+                font-size: 1rem;
+            }
+
+            .feature-card {
+                padding: 1.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .feature-icon {
+                width: 48px;
+                height: 48px;
+                font-size: 1.5rem;
+            }
+
+            .section {
+                padding: 60px 0;
+            }
+
+            .section-header {
+                margin-bottom: 2rem;
+            }
+
+            #contact {
+                margin: 0 1rem;
+                border-radius: 0.75rem;
+            }
+
+            footer {
+                padding: 32px 0;
+            }
+
+            .navbar-brand {
+                font-size: 1.25rem;
+            }
+
+            /* --- rule for the demo modal on mobile --- */
+            .modal-dialog.modal-lg {
+                max-width: 95vw;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-sub {
+                font-size: 1rem;
+            }
+
+            .hero .btn-lg {
+                padding: 12px 24px;
+                font-size: 0.95rem;
+            }
+
+            .feature-card {
+                padding: 1.25rem;
+            }
+
+            .feature-card h5 {
+                font-size: 1.1rem;
+            }
+
+            .feature-card p {
+                font-size: 0.9rem;
+            }
+
+            .section-header h2 {
+                font-size: 1.75rem;
+            }
+        }
+
+        /* --- Advanced UI/UX Enhancements --- */
+
+        /* Parallax Effect */
+        .parallax {
+            transition: transform 0.5s ease-out;
+        }
+
+        /* Scroll Reveal Animation */
+        .scroll-reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease-out;
+        }
+
+        .scroll-reveal.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Scroll Reveal Animation - Staggered Delay --- */
+        .scroll-reveal:nth-child(2) {
+            transition-delay: 0.1s;
+        }
+
+        .scroll-reveal:nth-child(3) {
+            transition-delay: 0.2s;
+        }
+
+        .scroll-reveal:nth-child(4) {
+            transition-delay: 0.3s;
+        }
+
+        /* --- Ensure hero badge animation aligns --- */
+        .hero-badge.scroll-reveal {
+            animation: slideInDown 0.6s ease-out;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hero-badge.scroll-reveal.revealed {
+            animation: none;
+        }
+
+        /* Improved CTA Button Group */
+        .cta-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .cta-group .btn {
+            flex: 1 1 auto;
+            min-width: 180px;
+        }
+
+        /* Feature Card Hover Glow */
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 1rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            background: radial-gradient(600px circle at var(--mouse-x) var(--mouse-y),
+                    rgba(var(--primary-rgb), 0.1),
+                    transparent 40%);
+        }
+
+        .feature-card:hover::after {
+            opacity: 1;
+        }
+
+        /* Stat Counter Animation */
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Smooth Underline Effect */
+        .link-underline {
+            position: relative;
+            text-decoration: none;
+        }
+
+        .link-underline::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+
+        .link-underline:hover::after {
+            width: 100%;
+        }
+
+        /* Loading Dots */
+        .loading-dots {
+            display: inline-flex;
+            gap: 4px;
+        }
+
+        .loading-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .loading-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        /* Testimonial/Quote Styling */
+        .quote-mark {
+            font-size: 3rem;
+            color: rgba(var(--primary-rgb), 0.2);
+            line-height: 0;
+            font-family: Georgia, serif;
+        }
+
+        /* Success Checkmark Animation */
+        .checkmark-circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: var(--success-color);
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 2;
+            stroke: #fff;
+            stroke-miterlimit: 10;
+            margin: 10% auto;
+            box-shadow: inset 0px 0px 0px var(--success-color);
+            animation: fill 0.4s ease-in-out 0.4s forwards, scale 0.3s ease-in-out 0.9s both;
+        }
+
+        .checkmark-check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes scale {
+
+            0%,
+            100% {
+                transform: none;
+            }
+
+            50% {
+                transform: scale3d(1.1, 1.1, 1);
+            }
+        }
+
+        @keyframes fill {
+            100% {
+                box-shadow: inset 0px 0px 0px 30px var(--success-color);
+            }
+        }
+
+        /* Interactive Icon Hover */
+        .icon-interactive {
+            transition: all 0.3s ease;
+        }
+
+        .icon-interactive:hover {
+            transform: rotate(360deg) scale(1.2);
+        }
+
+        /* Glassmorphism Enhanced */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        /* Scroll Progress Indicator */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            z-index: 9999;
+            transform-origin: left;
+            transition: transform 0.1s ease-out;
+        }
+
+        /* === WORLD-CLASS PROFESSIONAL ENHANCEMENTS === */
+
+        /* Premium Trust Badges */
+        .trust-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--gray-100);
+            border-radius: 0.5rem;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+
+        .trust-badge i {
+            color: var(--success-color);
+        }
+
+        /* Letter Spacing Utility */
+        .letter-spacing-wide {
+            letter-spacing: 0.1em;
+        }
+
+        /* Inline Stats for Social Proof */
+        .stat-item-inline {
+            padding: 1rem;
+        }
+
+        .stat-number-inline {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label-inline {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        /* Animated Stats Counter */
+        .stat-item {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        /* Professional Testimonial Cards */
+        .testimonial-card {
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 1rem;
+            padding: 2rem;
+            transition: all 0.2s ease;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .testimonial-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--gray-700);
+            margin-bottom: 1.5rem;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .testimonial-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .testimonial-info h6 {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0;
+            font-size: 0.9375rem;
+        }
+
+        .testimonial-info p {
+            margin: 0;
+            font-size: 0.8125rem;
+            color: var(--gray-600);
+        }
+
+        /* Enhanced Feature Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Benefit List with Checkmarks */
+        .benefit-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .benefit-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            font-size: 0.9375rem;
+            color: var(--gray-700);
+        }
+
+        .benefit-list li i {
+            color: var(--success-color);
+            font-size: 1.125rem;
+            flex-shrink: 0;
+            margin-top: 0.125rem;
+        }
+
+        /* Premium Pricing Tag */
+        .pricing-tag {
+            display: inline-block;
+            padding: 0.375rem 0.875rem;
+            background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.1), rgba(var(--secondary-rgb), 0.1));
+            border-radius: 2rem;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        /* Floating Action Elements */
+        .floating {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Enhanced Button Group */
+        .btn-group-modern {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-group-modern .btn {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        /* Progress Indicator */
+        .progress-dots {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .progress-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--gray-300);
+            transition: all 0.3s ease;
+        }
+
+        .progress-dot.active {
+            background: var(--primary-color);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        /* Info Card with Icon */
+        .info-card {
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .info-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .info-card-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.5rem;
+            background: rgba(var(--primary-rgb), 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .info-card-icon i {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+
+        .info-card-content h6 {
+            font-weight: 600;
+            color: var(--gray-900);
+            margin: 0 0 0.25rem;
+            font-size: 0.9375rem;
+        }
+
+        .info-card-content p {
+            margin: 0;
+            font-size: 0.8125rem;
+            color: var(--gray-600);
+            line-height: 1.5;
+        }
+
+        /* Enhanced Hero Badge */
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid var(--border-light);
+            border-radius: 2rem;
+            box-shadow: var(--shadow-sm);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 1.5rem;
+            animation: slideInDown 0.6s ease-out;
+        }
+
+        .hero-badge .badge-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success-color);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Section Divider */
+        .section-divider {
+            width: 60px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 2px;
+            margin: 0 auto 2rem;
+        }
+
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Enhanced Shadow on Scroll */
+        .sticky-shadow {
+            transition: box-shadow 0.2s ease;
+        }
+
+        .sticky-shadow.scrolled {
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Loading Skeleton Shimmer */
+        .skeleton-shimmer {
+            background: linear-gradient(90deg,
+                    var(--gray-100) 25%,
+                    var(--gray-200) 50%,
+                    var(--gray-100) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+
+            100% {
+                background-position: 200% 0;
+            }
+        }
+
+        /* Success Message */
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #065f46;
+            font-weight: 500;
+        }
+
+        .success-message i {
+            color: var(--success-color);
+            font-size: 1.25rem;
+        }
+
+        /* Enhanced Mobile Menu */
+        @media (max-width: 991px) {
+            .navbar-collapse {
+                background: white;
+                border-radius: 0.75rem;
+                margin-top: 1rem;
+                padding: 1rem;
+                box-shadow: var(--shadow-lg);
+            }
+
+            /* --- Fix for login modal on mobile --- */
+            .login-modal-brand {
+                display: none;
+            }
+        }
+
+        /* --- ENHANCED LOGIN MODAL STYLES --- */
+
+        /* Remove default modal borders and radius */
+        #loginModal .modal-content {
+            border: 0;
+            border-radius: 1rem;
+            /* We keep the radius, but remove the border */
+        }
+
+        #loginModal .modal-body {
+            padding: 0 !important;
+            /* Force no padding on the body */
+        }
+
+        /* 1. Brand/Gradient Column */
+        .login-modal-brand {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: left;
+            padding: 2.5rem;
+        }
+
+        /* 2. Form Column */
+        .login-modal-form {
+            position: relative;
+            /* --- EDITED: Reduced padding for form --- */
+            padding: 2rem;
+        }
+
+        @media (min-width: 992px) {
+            .login-modal-form {
+                padding: 2.5rem;
+                /* Re-apply larger padding for desktop */
+            }
+        }
+
+
+        /* Custom Close Button Position */
+        .login-modal-form .btn-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            z-index: 10;
+        }
+
+        /* 3. Google Button */
+        .btn-google {
+            background: #fff;
+            color: var(--gray-700);
+            border: 1px solid var(--border-color);
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn-google:hover {
+            background: var(--gray-50);
+            border-color: var(--gray-500);
+        }
+
+        /* 4. "OR" Separator */
+        .or-separator {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: var(--gray-500);
+            font-size: 0.8125rem;
+            font-weight: 500;
+            margin: 1.5rem 0;
+        }
+
+        .or-separator::before,
+        .or-separator::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .or-separator::before {
+            margin-right: 0.5em;
+        }
+
+        .or-separator::after {
+            margin-left: 0.5em;
+        }
+
+        /* 5. Show/Hide Password Toggle */
+        .password-toggle-icon {
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--gray-500);
+            z-index: 100;
+        }
+
+        .password-toggle-icon:hover {
+            color: var(--primary-color);
+        }
     </style>
 </head>
+
 <body>
-    <nav class="navbar navbar-expand-lg glass sticky-top">
+    <nav class="navbar navbar-expand-lg glass sticky-top sticky-shadow">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="#"><i class="bi bi-box-seam me-2"></i> Smart Inventory</a>
+            <a class="navbar-brand d-flex align-items-center" href="#"><i class="bi bi-box-seam me-2"></i> Smart
+                Inventory</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navContent">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navContent">
                 <ul class="navbar-nav me-auto ms-lg-4">
-                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#why">Why Us</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link link-underline" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link link-underline" href="#why">Why Us</a></li>
+                    <li class="nav-item"><a class="nav-link link-underline" href="#contact">Contact</a></li>
                 </ul>
                 <div class="d-flex gap-2">
                     <a id="openAppBtn" href="/app" class="btn btn-outline-primary d-none">Open App</a>
-                    <button id="loginCta" class="btn btn-primary"><i class="bi bi-box-arrow-in-right me-1"></i> Login</button>
+                    <button id="loginCta" class="btn btn-primary"><i class="bi bi-box-arrow-in-right me-1"></i>
+                        Login</button>
                 </div>
             </div>
         </div>
@@ -262,61 +1382,189 @@
         <div class="container">
             <div class="row align-items-center g-5">
                 <div class="col-lg-6">
-                    <h1 class="display-4 hero-title mb-3">Fast, modern inventory management</h1>
-                    <p class="lead hero-sub mb-4">Track stock in real-time, prevent shortages, and get sales insights—all in one beautiful dashboard.</p>
-                    <div class="d-flex flex-column flex-sm-row gap-2">
-                        <button class="btn btn-primary btn-lg d-inline-flex align-items-center justify-content-center" id="getStartedBtn">
+                    <div class="hero-badge scroll-reveal">
+                        <span class="badge-dot"></span>
+                        <span>🎉 New: Real-time inventory sync available</span>
+                    </div>
+
+                    <h1 class="display-4 hero-title mb-3 scroll-reveal">Fast, <span class="gradient-text">modern</span>
+                        inventory
+                        management</h1>
+                    <p class="lead hero-sub mb-4 scroll-reveal">Track stock in real-time, prevent shortages, and get
+                        sales
+                        insights—all in one beautiful dashboard.</p>
+
+                    <div class="btn-group-modern mb-4 scroll-reveal">
+                        <button class="btn btn-primary btn-lg d-inline-flex align-items-center justify-content-center"
+                            id="getStartedBtn">
                             Get Started Free <i class="bi bi-arrow-right-short ms-1"></i>
                         </button>
-                        <a href="#features" class="btn btn-outline-primary btn-lg d-inline-flex align-items-center justify-content-center">
-                            <i class="bi bi-check-circle me-2"></i> Explore features
-                        </a>
+                        <button type="button"
+                            class="btn btn-outline-primary btn-lg d-inline-flex align-items-center justify-content-center"
+                            data-bs-toggle="modal" data-bs-target="#demoModal">
+                            <i class="bi bi-play-circle me-2"></i> Watch Demo
+                        </button>
                     </div>
-                    <div class="mt-4 text-muted small">No setup required. Works in your browser.</div>
+
+                    <div class="d-flex flex-wrap gap-3 mb-3 scroll-reveal">
+                        <div class="trust-badge">
+                            <i class="bi bi-shield-check"></i>
+                            <span>Bank-level Security</span>
+                        </div>
+                        <div class="trust-badge">
+                            <i class="bi bi-speedometer2"></i>
+                            <span>Lightning Fast</span>
+                        </div>
+                        <div class="trust-badge">
+                            <i class="bi bi-people"></i>
+                            <span>10,000+ Users</span>
+                        </div>
+                    </div>
+
+                    <div class="text-muted small scroll-reveal">✓ No credit card required ✓ Free forever plan</div>
                 </div>
-                <div class="col-lg-6">
-                    <img src="https://images.unsplash.com/photo-1532619187608-e5375cab36aa?q=80&w=1200&auto=format&fit=crop" class="img-fluid hero-image" alt="Inventory dashboard preview" loading="lazy" />
+                <div class="col-lg-6 scroll-reveal">
+                    <img src="https://images.unsplash.com/photo-1532619187608-e5375cab36aa?q=80&w=1200&auto=format&fit=crop"
+                        class="img-fluid hero-image floating" alt="Inventory dashboard preview" loading="lazy" />
                 </div>
             </div>
         </div>
     </header>
 
+    <!-- Social Proof Section -->
+    <section class="py-5 bg-white border-top border-bottom">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-12 text-center mb-4">
+                    <p class="text-muted small text-uppercase fw-semibold letter-spacing-wide mb-4">Trusted by leading
+                        businesses worldwide</p>
+                </div>
+            </div>
+            <div class="row g-4">
+                <div class="col-6 col-md-3 text-center">
+                    <div class="stat-item-inline">
+                        <div class="stat-number-inline">10,000+</div>
+                        <div class="stat-label-inline">Active Users</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 text-center">
+                    <div class="stat-item-inline">
+                        <div class="stat-number-inline">500K+</div>
+                        <div class="stat-label-inline">Items Tracked</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 text-center">
+                    <div class="stat-item-inline">
+                        <div class="stat-number-inline">99.9%</div>
+                        <div class="stat-label-inline">Uptime</div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3 text-center">
+                    <div class="stat-item-inline">
+                        <div class="stat-number-inline">24/7</div>
+                        <div class="stat-label-inline">Support</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="features" class="section">
         <div class="container">
-            <div class="section-header text-center">
+            <div class="section-header text-center scroll-reveal">
+                <div class="section-divider"></div>
                 <h2>Everything you need</h2>
-                <p>One platform to manage your stock, suppliers, and sales without the clutter.</p>
+                <p class="lead">One platform to manage your stock, suppliers, and sales without the clutter.</p>
             </div>
-            
+
             <div class="row g-4">
-                <div class="col-md-6 col-lg-3">
+                <div class="col-md-6 col-lg-3 scroll-reveal">
                     <div class="feature-card">
                         <div class="feature-icon mb-3"><i class="bi bi-graph-up"></i></div>
                         <h5>Live Dashboard</h5>
                         <p class="text-muted mb-0">Track sales, stock levels, and low inventory at a glance.</p>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-3">
+                <div class="col-md-6 col-lg-3 scroll-reveal">
                     <div class="feature-card">
                         <div class="feature-icon mb-3"><i class="bi bi-box-seam"></i></div>
                         <h5>Inventory Control</h5>
                         <p class="text-muted mb-0">Smart reorder points to prevent stockouts and overstocking.</p>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-3">
+                <div class="col-md-6 col-lg-3 scroll-reveal">
                     <div class="feature-card">
-                        <div class="feature-card">
-                            <div class="feature-icon mb-3"><i class="bi bi-people"></i></div>
-                            <h5>CRM Light</h5>
-                            <p class="text-muted mb-0">Manage all your customers and suppliers in one place.</p>
-                        </div>
+                        <div class="feature-icon mb-3"><i class="bi bi-people"></i></div>
+                        <h5>CRM Light</h5>
+                        <p class="text-muted mb-0">Manage all your customers and suppliers in one place.</p>
                     </div>
                 </div>
-                <div class="col-md-6 col-lg-3">
+                <div class="col-md-6 col-lg-3 scroll-reveal">
                     <div class="feature-card">
                         <div class="feature-icon mb-3"><i class="bi bi-shield-check"></i></div>
                         <h5>Secure Access</h5>
-                        <p class="text-muted mb-0">Simple admin login with role-based permissions and protected APIs.</p>
+                        <p class="text-muted mb-0">Simple admin login with role-based permissions and protected APIs.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section bg-white">
+        <div class="container">
+            <div class="section-header text-center scroll-reveal">
+                <div class="section-divider"></div>
+                <h2>Loved by businesses worldwide</h2>
+                <p class="lead">See what our customers are saying about Smart Inventory</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-4 scroll-reveal">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            "This system completely transformed how we manage inventory. Real-time tracking saved us
+                            from countless stockouts!"
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar">JD</div>
+                            <div class="testimonial-info">
+                                <h6>John Davis</h6>
+                                <p>CEO, TechMart</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 scroll-reveal">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            "The dashboard is incredibly intuitive. We were up and running in minutes. Best inventory
+                            solution we've used."
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar">SC</div>
+                            <div class="testimonial-info">
+                                <h6>Sarah Chen</h6>
+                                <p>Operations Manager, RetailPro</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4 scroll-reveal">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">
+                            "Cut our inventory costs by 30% in the first quarter. The analytics are game-changing for
+                            our business."
+                        </div>
+                        <div class="testimonial-author">
+                            <div class="testimonial-avatar">MR</div>
+                            <div class="testimonial-info">
+                                <h6>Mike Rodriguez</h6>
+                                <p>Founder, QuickSupply</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -326,25 +1574,36 @@
     <section id="why" class="section">
         <div class="container">
             <div class="row g-5 align-items-center">
-                <div class="col-lg-6">
-                    <img src="https://images.unsplash.com/photo-1556761175-129418cb2dfe?q=80&w=1200&auto=format&fit=crop" class="img-fluid" alt="Team working on dashboard" loading="lazy">
+                <div class="col-lg-6 scroll-reveal">
+                    <img src="https://images.unsplash.com/photo-1556761175-129418cb2dfe?q=80&w=1200&auto=format&fit=crop"
+                        class="img-fluid" alt="Team working on dashboard" loading="lazy">
                 </div>
-                <div class="col-lg-6">
+                <div class="col-lg-6 scroll-reveal">
                     <p class="text-primary">BUILT FOR GROWTH</p>
                     <h2 class="display-6 mb-3">Stop guessing, start controlling</h2>
-                    <p class="lead hero-sub mb-4">Other inventory tools are either too simple (spreadsheets) or too complex (full ERPs). Smart Inventory gives you just the features you need to grow your business, with zero setup time.</p>
-                    <ul class="list-unstyled d-grid gap-3">
-                        <li class="d-flex align-items-center">
-                            <i class="bi bi-check-circle-fill text-success me-2 fs-5"></i>
-                            <span>Get instant low-stock alerts.</span>
+                    <p class="lead hero-sub mb-4">Other inventory tools are either too simple (spreadsheets) or too
+                        complex (full ERPs). Smart Inventory gives you just the features you need to grow your business,
+                        with zero setup time.</p>
+                    <ul class="benefit-list">
+                        <li>
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Get instant low-stock alerts before stockouts happen</span>
                         </li>
-                        <li class="d-flex align-items-center">
-                            <i class="bi bi-check-circle-fill text-success me-2 fs-5"></i>
-                            <span>Track items by location, SKU, or batch.</span>
+                        <li>
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Track items by location, SKU, batch, or serial number</span>
                         </li>
-                        <li class="d-flex align-items-center">
-                            <i class="bi bi-check-circle-fill text-success me-2 fs-5"></i>
-                            <span>Access your data from anywhere, on any device.</span>
+                        <li>
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Access your data from anywhere, on any device</span>
+                        </li>
+                        <li>
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Real-time sync across all your locations and users</span>
+                        </li>
+                        <li>
+                            <i class="bi bi-check-circle-fill"></i>
+                            <span>Export reports and analytics with one click</span>
                         </li>
                     </ul>
                 </div>
@@ -352,16 +1611,88 @@
         </div>
     </section>
 
-    <section class="section">
+    <section class="section bg-white">
         <div class="container">
-            <div id="contact" class="p-5 text-center">
+            <div class="section-header text-center mb-5 scroll-reveal">
+                <div class="section-divider"></div>
+                <h2>Why choose Smart Inventory?</h2>
+                <p class="lead">Built with the features that matter most to growing businesses</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6 scroll-reveal">
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="bi bi-lightning-charge"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <h6>Lightning Fast Setup</h6>
+                            <p>Get started in under 5 minutes. No complex configuration or training required.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 scroll-reveal">
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="bi bi-shield-lock"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <h6>Bank-Level Security</h6>
+                            <p>Your data is encrypted and backed up automatically. SOC 2 compliant infrastructure.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 scroll-reveal">
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="bi bi-phone"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <h6>Works Everywhere</h6>
+                            <p>Access from desktop, tablet, or mobile. Your inventory is always at your fingertips.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 scroll-reveal">
+                    <div class="info-card">
+                        <div class="info-card-icon">
+                            <i class="bi bi-headset"></i>
+                        </div>
+                        <div class="info-card-content">
+                            <h6>24/7 Support</h6>
+                            <p>Get help whenever you need it. Our support team responds in under 2 hours on average.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section cta-section">
+        <div class="container">
+            <div id="contact" class="cta-box p-5 text-center">
                 <div class="row justify-content-center">
                     <div class="col-lg-8">
-                        <h2 class="display-6">Ready to streamline your inventory?</h2>
-                        <p class="lead my-4">Start your free trial today. No credit card required.</p>
-                        <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#loginModal">
-                            Get Started Now <i class="bi bi-box-arrow-in-right ms-1"></i>
-                        </button>
+                        <span class="pricing-tag mb-3">FREE TO START</span>
+                        <h2 class="display-5 mb-3 fw-bold text-white">Ready to streamline your inventory?</h2>
+                        <p class="lead my-4 text-white opacity-90">Join 10,000+ businesses managing their inventory
+                            smarter. Start your free
+                            trial today—no credit card required.</p>
+                        <div class="d-flex gap-3 justify-content-center flex-wrap">
+                            <button class="btn btn-light btn-lg px-5 shadow-sm" data-bs-toggle="modal"
+                                data-bs-target="#loginModal">
+                                <i class="bi bi-box-arrow-in-right me-2"></i> Get Started Free
+                            </button>
+                            <button class="btn btn-outline-light btn-lg px-5" data-bs-toggle="modal"
+                                data-bs-target="#demoModal">
+                                <i class="bi bi-play-circle me-2"></i> Watch Demo
+                            </button>
+                        </div>
+                        <p class="mt-4 mb-0 small text-white opacity-75">✓ Setup in 5 minutes ✓ Cancel anytime ✓ Free
+                            forever plan available</p>
                     </div>
                 </div>
             </div>
@@ -385,32 +1716,85 @@
         </div>
     </footer>
 
-    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+    <div class="modal fade" id="demoModal" tabindex="-1" aria-labelledby="demoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="loginModalLabel">Sign in</h5>
+                    <h5 class="modal-title" id="demoModalLabel">Watch the Demo</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="modal-brand-icon">
-                        <i class="bi bi-box-seam"></i>
+                <div class="modal-body p-0">
+                    <div class="ratio ratio-16x9">
+                        <iframe id="demoVideo" src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+                            title="YouTube video player" frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
                     </div>
-                    <form id="loginForm" novalidate>
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="username" placeholder="Username" required value="admin">
-                            <label for="username">Username</label>
-                            <div class="invalid-feedback">Username required.</div>
-                        </div>
-                        <div class="form-floating mb-1">
-                            <input type="password" class="form-control" id="password" placeholder="Password" required>
-                            <label for="password">Password</label>
-                            <div class="invalid-feedback">Password required.</div>
-                        </div>
-                    </form>
                 </div>
-                <div class="modal-footer d-grid">
-                    <button type="button" id="loginBtn" class="btn btn-primary btn-lg">Sign in</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content overflow-hidden">
+                <div class="modal-body p-0">
+                    <div class="row g-0">
+                        <div class="col-lg-6 login-modal-brand">
+                            <div class="d-flex flex-column justify-content-center h-100 p-4 p-md-5">
+                                <i class="bi bi-box-seam display-3"></i>
+                                <h2 class="mt-3 mb-2">Smart Inventory</h2>
+                                <p class="lead mb-0">Your stock, perfectly in sync.</p>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6 login-modal-form">
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+                            <div class="p-4 p-md-5">
+                                <h5 class="modal-title mb-4" id="loginModalLabel">Sign in to your account</h5>
+
+                                <button type="button" class="btn btn-google w-100">
+                                    <i class="bi bi-google me-2"></i> Sign in with Google
+                                </button>
+
+                                <div class="or-separator">OR</div>
+
+                                <form id="loginForm" novalidate>
+                                    <div class="form-floating mb-3">
+                                        <input type="text" class="form-control" id="username" placeholder="Username"
+                                            required value="admin">
+                                        <label for="username">Username</label>
+                                        <div class="invalid-feedback">Username required.</div>
+                                    </div>
+
+                                    <div class="form-floating mb-3 position-relative">
+                                        <input type="password" class="form-control" id="password" placeholder="Password"
+                                            required>
+                                        <label for="password">Password</label>
+                                        <span id="togglePassword" class="password-toggle-icon">
+                                            <i class="bi bi-eye-slash"></i>
+                                        </span>
+                                        <div class="invalid-feedback">Password required.</div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <a href="#" class="form-text small float-end">Forgot password?</a>
+                                    </div>
+
+                                    <button type="button" id="loginBtn" class="btn btn-primary btn-lg w-100">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i> Sign in
+                                    </button>
+
+                                </form>
+
+                                <div class="text-center mt-4">
+                                    <p class="small text-muted">Don't have an account? <a href="#">Sign up free</a></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -421,9 +1805,12 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
     <script>
+        // --- GLOBAL FUNCTIONS (Can stay outside) ---
         const API_BASE_URL = '';
         const API_URL = API_BASE_URL + '/api';
+
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             const el = document.createElement('div');
@@ -434,68 +1821,208 @@
             container.appendChild(el);
             try { const t = new bootstrap.Toast(el, { delay: 3000 }); t.show(); el.addEventListener('hidden.bs.toast', () => el.remove(), { once: true }); } catch { el.remove(); }
         }
-        function setAuth(token){ try { localStorage.setItem('authToken', token||''); } catch {}
+        function setAuth(token) {
+            try { localStorage.setItem('authToken', token || ''); } catch { }
         }
-        function setAuthUser(username){ try { localStorage.setItem('authUser', username||'Admin'); } catch {} }
-        function getAuth(){ try { return localStorage.getItem('authToken') || ''; } catch { return ''; } }
+        function setAuthUser(username) { try { localStorage.setItem('authUser', username || 'Admin'); } catch { } }
+        function getAuth() { try { return localStorage.getItem('authToken') || ''; } catch { return ''; } }
 
-        // If already logged in, show Open App button and optionally redirect
-        (function(){
-            const token = getAuth();
-            const openBtn = document.getElementById('openAppBtn');
-            const loginBtnCta = document.getElementById('loginCta');
-            if (token) { 
-                if (openBtn) openBtn.classList.remove('d-none'); 
-                if (loginBtnCta) loginBtnCta.classList.add('d-none'); // Also hide main login button
-            }
-        })();
-
-        async function apiFetch(url, options = {}){
+        async function apiFetch(url, options = {}) {
             const defaultHeaders = { 'Content-Type': 'application/json', 'Accept': 'application/json', ...options.headers };
             const fetchOptions = { ...options, headers: defaultHeaders };
-            if (fetchOptions.body && typeof fetchOptions.body !== 'string' && !(['GET','HEAD'].includes((fetchOptions.method||'GET').toUpperCase()))) {
+            if (fetchOptions.body && typeof fetchOptions.body !== 'string' && !(['GET', 'HEAD'].includes((fetchOptions.method || 'GET').toUpperCase()))) {
                 fetchOptions.body = JSON.stringify(fetchOptions.body);
-            } else if (['GET','HEAD'].includes((fetchOptions.method||'GET').toUpperCase())) {
+            } else if (['GET', 'HEAD'].includes((fetchOptions.method || 'GET').toUpperCase())) {
                 delete fetchOptions.body;
             }
             const res = await fetch(url, fetchOptions);
-            const isJson = (res.headers.get('content-type')||'').includes('application/json');
+            const isJson = (res.headers.get('content-type') || '').includes('application/json');
             const body = isJson ? await res.json() : await res.text();
             if (!res.ok) throw new Error((isJson && body && body.error) ? body.error : (typeof body === 'string' && body.trim()) || res.statusText || 'Login failed');
             return body;
         }
 
-        // CTA open modal
-        // Note: I left getStartedBtn, but the new CTA in #contact section also opens the modal
-        document.getElementById('getStartedBtn')?.addEventListener('click', ()=>{
-            bootstrap.Modal.getOrCreateInstance(document.getElementById('loginModal')).show();
-        });
-        document.getElementById('loginCta')?.addEventListener('click', ()=>{
-            bootstrap.Modal.getOrCreateInstance(document.getElementById('loginModal')).show();
-        });
+        // --- ALL SETUP CODE RUNS AFTER THE DOM IS LOADED ---
+        document.addEventListener('DOMContentLoaded', () => {
 
-        // Login handler
-        const form = document.getElementById('loginForm');
-        const btn = document.getElementById('loginBtn');
-        const doLogin = async () => {
-            if (!form.checkValidity()) { form.reportValidity(); return; }
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            const original = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Signing in...`;
-            try {
-                const res = await apiFetch(`${API_URL}/login`, { method: 'POST', body: { username, password } });
-                if (!res || !res.token) throw new Error('Invalid login response');
-                setAuth(res.token);
-                setAuthUser(username || 'Admin');
-                showToast('Signed in successfully.', 'success');
-                window.location.href = '/app';
-            } catch (err) {
-                showToast(err.message || 'Login failed', 'error');
-            } finally { btn.disabled = false; btn.innerHTML = original; }
-        };
-        btn?.addEventListener('click', doLogin);
-        form?.addEventListener('submit', (e)=>{ e.preventDefault(); doLogin(); });
-        document.getElementById('year').textContent = new Date().getFullYear();
+            /**
+             * 1. STICKY NAVBAR SHADOW
+             */
+            const navbar = document.querySelector('.navbar.sticky-shadow');
+            if (navbar) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 10) {
+                        navbar.classList.add('scrolled');
+                    } else {
+                        navbar.classList.remove('scrolled');
+                    }
+                });
+            }
+
+            /**
+             * 2. SCROLL-REVEAL ANIMATIONS
+             */
+            const revealElements = document.querySelectorAll('.scroll-reveal');
+            if (revealElements.length > 0) {
+                const revealObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('revealed');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, {
+                    root: null,
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -50px 0px'
+                });
+
+                revealElements.forEach(el => {
+                    revealObserver.observe(el);
+                });
+            }
+
+            /**
+             * 3. ANIMATED STATS COUNTER
+             */
+            const statsSection = document.getElementById('stats-section');
+            if (statsSection) {
+                const countUp = (el) => {
+                    const target = parseFloat(el.getAttribute('data-target'));
+                    const duration = 2000;
+                    let start = 0;
+                    const isDecimal = target % 1 !== 0;
+
+                    const update = (timestamp) => {
+                        if (!start) start = timestamp;
+                        const progress = timestamp - start;
+                        const percentage = Math.min(progress / duration, 1);
+
+                        if (isDecimal) {
+                            const value = percentage * target;
+                            el.textContent = value.toFixed(1);
+                        } else {
+                            const value = Math.floor(percentage * target);
+                            el.textContent = value.toLocaleString();
+                        }
+
+                        if (progress < duration) {
+                            requestAnimationFrame(update);
+                        } else {
+                            if (isDecimal) {
+                                el.textContent = target.toFixed(1);
+                            } else {
+                                el.textContent = target.toLocaleString();
+                            }
+                        }
+                    };
+                    requestAnimationFrame(update);
+                };
+
+                const statsObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            document.querySelectorAll('.stat-number[data-target]').forEach(el => {
+                                countUp(el);
+                            });
+                            observer.unobserve(statsSection);
+                        }
+                    });
+                }, {
+                    threshold: 0.5
+                });
+                statsObserver.observe(statsSection);
+            }
+
+            /**
+             * 4. "WATCH DEMO" MODAL VIDEO HANDLER
+             */
+            const demoModal = document.getElementById('demoModal');
+            const demoVideo = document.getElementById('demoVideo');
+            if (demoModal && demoVideo) {
+                const originalVideoSrc = demoVideo.src;
+                demoModal.addEventListener('hidden.bs.modal', () => {
+                    demoVideo.src = originalVideoSrc;
+                });
+            }
+
+            /**
+             * 5. ENHANCED LOGIN MODAL: SHOW/HIDE PASSWORD
+             */
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+
+            if (togglePassword && passwordInput) {
+                togglePassword.addEventListener('click', () => {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+
+                    const icon = togglePassword.querySelector('i');
+                    if (type === 'password') {
+                        icon.classList.remove('bi-eye');
+                        icon.classList.add('bi-eye-slash');
+                    } else {
+                        icon.classList.remove('bi-eye-slash');
+                        icon.classList.add('bi-eye');
+                    }
+                });
+            }
+
+            /**
+             * 6. AUTH & LOGIN LOGIC
+             */
+
+            // Check auth status on load
+            (function () {
+                const token = getAuth();
+                const openBtn = document.getElementById('openAppBtn');
+                const loginBtnCta = document.getElementById('loginCta');
+                if (token) {
+                    if (openBtn) openBtn.classList.remove('d-none');
+                    if (loginBtnCta) loginBtnCta.classList.add('d-none');
+                }
+            })();
+
+            // Wire up CTA buttons
+            document.getElementById('getStartedBtn')?.addEventListener('click', () => {
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('loginModal')).show();
+            });
+            document.getElementById('loginCta')?.addEventListener('click', () => {
+                bootstrap.Modal.getOrCreateInstance(document.getElementById('loginModal')).show();
+            });
+
+            // Login handler
+            const form = document.getElementById('loginForm');
+            const btn = document.getElementById('loginBtn');
+            const doLogin = async () => {
+                if (!form.checkValidity()) { form.reportValidity(); return; }
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+                const original = btn.innerHTML; btn.disabled = true; btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Signing in...`;
+                try {
+                    // REAL API CALL
+                    const res = await apiFetch(`${API_URL}/login`, { method: 'POST', body: { username, password } });
+                    if (!res || !res.token) throw new Error('Invalid login response');
+                    setAuth(res.token);
+                    setAuthUser(username || 'Admin');
+                    showToast('Signed in successfully.', 'success');
+                    window.location.href = '/app';
+
+                } catch (err) {
+                    showToast(err.message || 'Login failed', 'error');
+                } finally { btn.disabled = false; btn.innerHTML = original; }
+            };
+
+            btn?.addEventListener('click', doLogin);
+            form?.addEventListener('submit', (e) => { e.preventDefault(); doLogin(); });
+
+            /**
+             * 7. FOOTER YEAR
+             */
+            document.getElementById('year').textContent = new Date().getFullYear();
+
+        }); // <-- END OF DOMContentLoaded
     </script>
 </body>
+
 </html>
